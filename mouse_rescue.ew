@@ -77,13 +77,14 @@ integer captured
 captured = 0
 function mouse_event_handler(atom hwnd, atom iMsg, atom wParam, atom lParam, sequence handlers)
     integer xPos,yPos,zDelta
+    sequence event
     xPos = extend_sign(LOWORD(lParam))
     yPos = extend_sign(HIWORD(lParam))
     if iMsg = WM_MOUSEMOVE and and_bits(handle_events,MOVE) then
-        mouse_buff = append(mouse_buff,{MOVE,xPos,yPos})
+        event = {MOVE,xPos,yPos}
         
     elsif (iMsg = WM_LBUTTONDOWN ) and and_bits(handle_events,LEFT_DOWN) then
-        mouse_buff = append(mouse_buff,{LEFT_DOWN,xPos,yPos})
+        event = {LEFT_DOWN,xPos,yPos}
         if and_bits(handle_events,LEFT_UP) then
             if not captured then
                 c_proc(SetCapture,{hwnd})
@@ -91,13 +92,13 @@ function mouse_event_handler(atom hwnd, atom iMsg, atom wParam, atom lParam, seq
             captured += 1
         end if
     elsif iMsg = WM_LBUTTONUP and and_bits(handle_events,LEFT_UP) then
-        mouse_buff = append(mouse_buff,{LEFT_UP,xPos,yPos})
+        event = {LEFT_UP,xPos,yPos}
         captured -= 1
         if not captured then
             c_proc(ReleaseCapture,{})
         end if
     elsif iMsg = WM_MBUTTONDOWN and and_bits(handle_events,MIDDLE_DOWN) then
-        mouse_buff = append(mouse_buff,{MIDDLE_DOWN,xPos,yPos})
+        event = {MIDDLE_DOWN,xPos,yPos}
         if and_bits(handle_events,MIDDLE_UP) then
             if not captured then
                 c_proc(SetCapture,{hwnd})
@@ -105,13 +106,13 @@ function mouse_event_handler(atom hwnd, atom iMsg, atom wParam, atom lParam, seq
             captured += 1
         end if
     elsif iMsg = WM_MBUTTONUP and and_bits(handle_events,MIDDLE_UP) then
-        mouse_buff = append(mouse_buff,{MIDDLE_UP,xPos,yPos})
+        event = {MIDDLE_UP,xPos,yPos}
         captured -= 1
         if not captured then
             c_proc(ReleaseCapture,{})
         end if
     elsif iMsg = WM_RBUTTONDOWN and and_bits(handle_events,RIGHT_DOWN) then
-        mouse_buff = append(mouse_buff,{RIGHT_DOWN,xPos,yPos})
+        event = {RIGHT_DOWN,xPos,yPos}
         if and_bits(handle_events,RIGHT_UP) then
             if not captured then
                 c_proc(SetCapture,{hwnd})
@@ -119,7 +120,7 @@ function mouse_event_handler(atom hwnd, atom iMsg, atom wParam, atom lParam, seq
             captured += 1
         end if
     elsif iMsg = WM_RBUTTONUP and and_bits(handle_events,RIGHT_UP) then
-        mouse_buff = append(mouse_buff,{RIGHT_UP,xPos,yPos})
+        event = {RIGHT_UP,xPos,yPos}
         captured -= 1
         if not captured then
             c_proc(ReleaseCapture,{})
@@ -131,13 +132,15 @@ function mouse_event_handler(atom hwnd, atom iMsg, atom wParam, atom lParam, seq
         xPos = peek4s(point+0)
         yPos = peek4s(point+4)
         if zDelta > 0 then
-            mouse_buff = append(mouse_buff,{WHEEL_UP,xPos,yPos})
+            event = {WHEEL_UP,xPos,yPos}
         else
-            mouse_buff = append(mouse_buff,{WHEEL_DOWN,xPos,yPos})
+            event = {WHEEL_DOWN,xPos,yPos}
         end if
     else
         return call_func(handlers[$],{hwnd,iMsg,wParam,lParam,handlers[1..$-1]})
     end if
+    event[2..3] = floor(event[2..3]/scale)
+    mouse_buff = append(mouse_buff,event)
     return 0
 end function
 
