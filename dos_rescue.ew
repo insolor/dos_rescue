@@ -1,3 +1,5 @@
+namespace dos_rescue
+
 without warning
 
 -- Windows GDI equivalent routines 
@@ -2155,6 +2157,11 @@ global procedure sound(atom freq)
         c_proc(PlaySound,{0,0,SND_ASYNC})
     end if
     c_proc(Sleep,{40})
+end procedure
+
+global
+procedure tick_rate(atom rate)
+    -- stub
 end procedure
 
 if graphics_mode(3) then
