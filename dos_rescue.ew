@@ -871,7 +871,7 @@ procedure toggle_full_screen()
 end procedure
 
 -- Scaling --
-global integer scale = 1 -- 1 disables scaling
+global integer scale = 2 -- 1 disables scaling
 
 -- Text caret routines --
 
@@ -945,9 +945,9 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
                 end if
             else
                 if active_page = display_page then
-                    c_proc(StretchBlt, hdcWindow & seqrect & hdcActive & seqrect[1..2] & seqrect[3..4]/scale & SRCCOPY)
+                    c_proc(StretchBlt, hdcWindow & seqrect & hdcActive & floor(seqrect/scale) & SRCCOPY)
                 else
-                    c_proc(StretchBlt, hdcWindow & seqrect & hdcDisplay & seqrect[1..2] & seqrect[3..4]/scale & SRCCOPY)
+                    c_proc(StretchBlt, hdcWindow & seqrect & hdcDisplay & floor(seqrect/scale) & SRCCOPY)
                 end if
             end if
         c_proc(EndPaint, {hwnd, paintstruct})
