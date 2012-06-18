@@ -3,23 +3,16 @@ without warning
 -- Windows GDI equivalent routines 
 -- for essential DOS graphics, keyboard etc.
 
-include machine.e as machine
-include misc.e
-include dll.e
+include std/machine.e
+include std/dll.e
+include std/math.e -- for or_all()
+include std/convert.e -- for bytes_to_int() etc.
+include std/error.e -- for crash()
+include std/text.e -- for sprint()
+include std/os.e -- for instance()
 
 constant TRUE = 1, FALSE = 0
 constant STDIN = 0, STDOUT = 1
-
-global function or_all(sequence s)
--- or together all elements of a sequence
-    atom result
-    
-    result = 0
-    for i = 1 to length(s) do
-        result = or_bits(result, s[i])
-    end for
-    return result
-end function
 
 global
 function LOWORD(atom a)
@@ -216,8 +209,7 @@ constant
 -- WinAPI imports --
 
 procedure not_found(sequence name)
-    crash_message("Couldn't find " & name & '\n')
-    ?1/0
+    crash("Couldn't find " & name & '\n')
 end procedure
 
 function link_c_func(atom dll, sequence name, sequence args, atom result)
@@ -1090,8 +1082,7 @@ procedure WinMain(integer first_time)
 
         class = c_func(RegisterClassEx, {wndclass})
         if class = 0 then
-            crash_message("Couldn't register class\n")
-            ? 1/0
+            crash("Couldn't register window class\n")
         end if
         
         hwnd = c_func(CreateWindow, {
@@ -1101,7 +1092,8 @@ procedure WinMain(integer first_time)
                   or_all({WS_OVERLAPPED,
                           WS_MINIMIZEBOX,
                           WS_CAPTION,
-                          WS_SYSMENU
+                          WS_SYSMENU,
+                          WS_MAXIMIZEBOX
                           }), -- window style
                   CW_USEDEFAULT,         -- initial x position
                   CW_USEDEFAULT,         -- initial y position
@@ -1113,8 +1105,7 @@ procedure WinMain(integer first_time)
                   NULL})                 -- creation parameters
     
         if hwnd = 0 then
-            crash_message("Couldn't CreateWindow\n")
-            ? 1/0
+            crash("Couldn't CreateWindow\n")
         end if
     
         c_proc(ShowWindow, {hwnd, SW_SHOWNORMAL})
@@ -2099,11 +2090,8 @@ end function
 
 -- Miscellaneous routines --
 
-constant M_USE_VESA = 36
 global procedure use_vesa(integer code)
-    if platform() = DOS32 then
-        machine_proc(M_USE_VESA, code)
-    end if
+    -- stub
 end procedure
 
 -- integer freq, duration
