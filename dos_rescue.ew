@@ -329,6 +329,7 @@ global constant
         {C_LONG, C_LONG, C_LONG, C_LONG, C_LONG, C_LONG}, C_LONG),
     SetDIBColorTable = link_c_proc(gdi32, "SetDIBColorTable", {C_LONG, C_LONG, C_LONG, C_LONG}),
     BitBlt = link_c_proc(gdi32, "BitBlt",repeat(C_LONG,9)),
+    StretchBlt = link_c_proc(gdi32, "StretchBlt",repeat(C_LONG,11)),
     DeleteDC = link_c_proc(gdi32, "DeleteDC", {C_LONG}),
     CreateFontIndirect = link_c_func(gdi32, "CreateFontIndirectA",{C_POINTER},C_LONG),
     
@@ -446,12 +447,10 @@ sequence vc
 integer lines, columns
 
 global function video_config()
-    lines = vc[VC_LINES]
-    columns = vc[VC_COLUMNS]
     return vc[1..VC_PAGES]
 end function
 
--- Difinitions of palettes and palette routines --
+-- Definitions of palettes and palette routines --
 
 -- COLOR values -- for characters and pixels
 global constant 
@@ -702,21 +701,21 @@ constant
     -- font_name = ""
 
 procedure init_window(atom hwnd)
-    sequence winsize,clientsize,vc,s
+    sequence winsize,clientsize,s
     sequence blank
     integer ncolors
-    vc = video_config()
+    sequence loc_vc = vc
     
     -- Initialize font
     if font != 0 then
         c_proc(DeleteObject,{font})
     end if
-    if vc[VC_XPIXELS] = 0 then
+    if loc_vc[VC_XPIXELS] = 0 then
         poke4(logfont+lfHeight,default_char_height)
         poke4(logfont+lfWidth,default_char_width)
     else
-        char_width = floor(vc[VC_XPIXELS]/vc[VC_COLUMNS])
-        char_height = vc[VC_YPIXELS]/vc[VC_LINES]
+        char_width = floor(loc_vc[VC_XPIXELS]/loc_vc[VC_COLUMNS])
+        char_height = loc_vc[VC_YPIXELS]/loc_vc[VC_LINES]
         poke4(logfont+lfHeight,char_height)
         -- if floor(char_height) = 8 then -- some tweaks for the Courier New font
             -- poke4(logfont+lfWidth,char_width-1)
@@ -748,31 +747,31 @@ procedure init_window(atom hwnd)
     c_proc(ReleaseDC,{hwnd,hdcWindow})
     
     -- Initialize window size
-    if not vc[VC_XPIXELS] then -- 'text' mode
-        vc[VC_XPIXELS] = vc[VC_COLUMNS]*char_width
-        vc[VC_YPIXELS] = vc[VC_LINES]*char_height
+    if not loc_vc[VC_XPIXELS] then -- 'text' mode
+        loc_vc[VC_XPIXELS] = loc_vc[VC_COLUMNS]*char_width
+        loc_vc[VC_YPIXELS] = loc_vc[VC_LINES]*char_height
         pixel_graphics = FALSE
     else -- 'graphics' mode
-        vc[VC_COLUMNS] = floor(vc[VC_XPIXELS]/char_width)
-        vc[VC_LINES] = floor(vc[VC_YPIXELS]/char_height)
-        columns = vc[VC_COLUMNS]
-        lines = vc[VC_LINES]
+        loc_vc[VC_COLUMNS] = floor(loc_vc[VC_XPIXELS]/char_width)
+        loc_vc[VC_LINES] = floor(loc_vc[VC_YPIXELS]/char_height)
         pixel_graphics = TRUE
     end if
+    columns = loc_vc[VC_COLUMNS]
+    lines = loc_vc[VC_LINES]
     
     c_proc(GetClientRect, {hwnd,rect})
     clientsize = peek4u({rect+8,2})
     c_proc(GetWindowRect,{hwnd,rect})
     winsize = peek4u({rect,4})
-    winsize[3..4] += - winsize[1..2] - clientsize + vc[VC_XPIXELS..VC_YPIXELS]
+    winsize[3..4] += - winsize[1..2] - clientsize + loc_vc[VC_XPIXELS..VC_YPIXELS]*scale
     c_proc(SetWindowPos, hwnd & 0 & winsize & HWND_TOP)
-    screen_size_x = vc[VC_XPIXELS]
-    screen_size_y = vc[VC_YPIXELS]
+    screen_size_x = loc_vc[VC_XPIXELS]
+    screen_size_y = loc_vc[VC_YPIXELS]
     bytes_per_line = and_bits(screen_size_x+3,-4)
     
     -- Initialize palette
-    ncolors = vc[VC_NCOLORS]
-    color_map = vc[VC_COLOR_MAP]
+    ncolors = loc_vc[VC_NCOLORS]
+    color_map = loc_vc[VC_COLOR_MAP]
     color_mask = ncolors-1
     if length(brushes) = 0 then
         s = repeat(0,ncolors)
@@ -794,7 +793,7 @@ procedure init_window(atom hwnd)
     end for
     
     -- Initialize pages
-    pages = vc[VC_PAGES]
+    pages = loc_vc[VC_PAGES]
     blank = blank_line(BLACK,WHITE)
     text_pages = repeat(repeat(blank,lines),pages)
     active_page = 1
@@ -871,6 +870,9 @@ procedure toggle_full_screen()
     end if
 end procedure
 
+-- Scaling --
+integer scale = 1 -- Scale factor. 1 disables.
+
 -- Text caret routines --
 
 -- cursor styles:
@@ -905,8 +907,7 @@ end procedure
 
 -- Window proc --
 
-atom buff
-buff = allocate(1)
+atom buff = allocate(1) -- a buffer for CharToOemBuff function
 
 function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
 -- callback routine to handle Window class
@@ -936,10 +937,18 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
     elsif iMsg = WM_PAINT then
         hdcWindow = c_func(BeginPaint, {hwnd, paintstruct})
             seqrect = peek4u({paintstruct+rcPaint, 4})
-            if active_page = display_page then
-                c_proc(BitBlt, hdcWindow & seqrect & hdcActive & seqrect[1..2] & SRCCOPY)
+            if scale < 2 then
+                if active_page = display_page then
+                    c_proc(BitBlt, hdcWindow & seqrect & hdcActive & seqrect[1..2] & SRCCOPY)
+                else
+                    c_proc(BitBlt, hdcWindow & seqrect & hdcDisplay & seqrect[1..2] & SRCCOPY)
+                end if
             else
-                c_proc(BitBlt, hdcWindow & seqrect & hdcDisplay & seqrect[1..2] & SRCCOPY)
+                if active_page = display_page then
+                    c_proc(StretchBlt, hdcWindow & seqrect & hdcActive & seqrect[1..2] & seqrect[3..4]/scale & SRCCOPY)
+                else
+                    c_proc(StretchBlt, hdcWindow & seqrect & hdcDisplay & seqrect[1..2] & seqrect[3..4]/scale & SRCCOPY)
+                end if
             end if
         c_proc(EndPaint, {hwnd, paintstruct})
         return 0
@@ -1023,7 +1032,7 @@ constant msg = allocate(SIZE_OF_MESSAGE)
 
 constant icon_names = {"exw","euiw","eui"}
 function get_icon()
--- Get icon form the executable
+-- Get icon from the executable
     atom icon_name,icon_handle
     for n = 1 to length(icon_names) do
         icon_name = allocate_string(icon_names[n])
