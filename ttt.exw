@@ -26,7 +26,7 @@
 --   own possibilities of winning than with blocking your possibilities.
 
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 -- include mouse.e
 include mouse_rescue.ew
 include wildcard.e
@@ -171,25 +171,25 @@ end procedure
 
 procedure Why(reason_number reason)
 -- show the reason why the computer made its move
-    dos_rescue:position(22, 11)
+    position(22, 11)
     if reason = 1 then
-	dos_rescue:puts(SCREEN, "BLOCK 3 IN A ROW")
+	puts(SCREEN, "BLOCK 3 IN A ROW")
     elsif reason = 2 then
-	dos_rescue:puts(SCREEN, "FORCE 3X3       ")
+	puts(SCREEN, "FORCE 3X3       ")
     elsif reason = 3 then
-	dos_rescue:puts(SCREEN, "FORCE 3-2-2-1   ")
+	puts(SCREEN, "FORCE 3-2-2-1   ")
     elsif reason = 4 then
-	dos_rescue:puts(SCREEN, "FORCE 3-2-2     ")
+	puts(SCREEN, "FORCE 3-2-2     ")
     elsif reason = 5 then
-	dos_rescue:puts(SCREEN, "PREVENT 3X3     ")
+	puts(SCREEN, "PREVENT 3X3     ")
     elsif reason = 6 then
-	dos_rescue:puts(SCREEN, "PREVENT 3-2-2-1 ")
+	puts(SCREEN, "PREVENT 3-2-2-1 ")
     elsif reason = 7 then
-	dos_rescue:puts(SCREEN, "PREVENT 3-2-2   ")
+	puts(SCREEN, "PREVENT 3-2-2   ")
     elsif reason = 8 then
-	dos_rescue:printf(SCREEN, "VALUE=%d         ", bestval)
+	printf(SCREEN, "VALUE=%d         ", bestval)
     else
-	dos_rescue:puts(SCREEN, "                ")
+	puts(SCREEN, "                ")
     end if
 end procedure
 
@@ -347,15 +347,15 @@ function GetMove()
     object event
 
     while TRUE do
-	dos_rescue:position(20, 1)
-	dos_rescue:puts(SCREEN, repeat(' ', 30))
-	dos_rescue:position(20, 1)
-	dos_rescue:puts(SCREEN, ' ' & pname[player])
-	dos_rescue:puts(SCREEN, "'s move? ")
+	position(20, 1)
+	puts(SCREEN, repeat(' ', 30))
+	position(20, 1)
+	puts(SCREEN, ' ' & pname[player])
+	puts(SCREEN, "'s move? ")
 	event = -1
 	while atom(event) do
 	    event = get_mouse()
-	    if dos_rescue:get_key() != -1 then
+	    if get_key() != -1 then
 		if graphics_mode(-1) then
 		end if
 		abort(1)
@@ -365,8 +365,8 @@ function GetMove()
 	if m >= 111 and m <= 444 then
 	    if lp[m] then
 		if positions[lp[m]][AVAIL] = 0 then
-		    dos_rescue:position(20, 1)
-		    dos_rescue:puts(SCREEN, repeat(' ', 30))
+		    position(20, 1)
+		    puts(SCREEN, repeat(' ', 30))
 		    exit
 		end if
 	    end if
@@ -482,10 +482,10 @@ procedure Another(line x)
     if inarow < 4 then
 	return
     end if
-    dos_rescue:position(21,6)
+    position(21,6)
     text_color(BRIGHT_RED)
-    dos_rescue:puts(SCREEN, pname[player])
-    dos_rescue:puts(SCREEN, " WINS!          ")
+    puts(SCREEN, pname[player])
+    puts(SCREEN, " WINS!          ")
     text_color(YELLOW)
     endgame = TRUE
     mouse_pointer(OFF)
@@ -493,7 +493,7 @@ procedure Another(line x)
     for i = 1 to 4 do
 	for j = POS1 to POS4 do
 	    PrintMove(lines[x][j])
-		k = dos_rescue:get_key()
+		k = get_key()
 		if k != -1 then
 			exit
 		end if
@@ -548,7 +548,7 @@ procedure init()
 -- initialize variables
     integer temp, u, line, t
 
-    dos_rescue:clear_screen()
+    clear_screen()
     endgame = FALSE
     cmoves = 0
     hmoves = 0
@@ -619,15 +619,15 @@ procedure init()
     for i = 1 to NPOSITIONS do
 	positions[i][NLIVE] = positions[i][LINES_THRU]
     end for
-    dos_rescue:position(15, 2)
+    position(15, 2)
     text_color(COLORS[1])
-    dos_rescue:puts(SCREEN, "3-D ")
+    puts(SCREEN, "3-D ")
     text_color(COLORS[2])
-    dos_rescue:puts(SCREEN, "tic ")
+    puts(SCREEN, "tic ")
     text_color(COLORS[3])
-    dos_rescue:puts(SCREEN, "TAC ")
+    puts(SCREEN, "TAC ")
     text_color(COLORS[4])
-    dos_rescue:puts(SCREEN, "toe ")
+    puts(SCREEN, "toe ")
 end procedure
 
 
@@ -833,9 +833,9 @@ procedure Setup()
     ptype[2] = COMPUTER
     pname[1] = "DEFENDO"
     pname[2] = "AGGRESSO"
-    dos_rescue:position(15, 1)
-    dos_rescue:puts(SCREEN, " Name of player 1? (cr for DEFENDO) ")
-    name = dos_rescue:gets(KEYB)
+    position(15, 1)
+    puts(SCREEN, " Name of player 1? (cr for DEFENDO) ")
+    name = gets(KEYB)
     if atom(name) then
 	name = ""
     else
@@ -847,8 +847,8 @@ procedure Setup()
 	ptype[1] = HUMAN
 	humans += 1
     end if
-    dos_rescue:puts(SCREEN, "\n Name of player 2? (cr for AGGRESSO) ")
-    name = dos_rescue:gets(KEYB)
+    puts(SCREEN, "\n Name of player 2? (cr for AGGRESSO) ")
+    name = gets(KEYB)
     if atom(name) then
 	name = ""
     else
@@ -909,17 +909,17 @@ procedure ttt()
 		UpdateMove(m[1])
 		player = 3 - player
 	    else
-		dos_rescue:position(18,1)
-		dos_rescue:puts(SCREEN, " A DRAW             ")
+		position(18,1)
+		puts(SCREEN, " A DRAW             ")
 		Delay(500)
 		exit
 	    end if
 	end while
-	dos_rescue:position(19, 1)
+	position(19, 1)
 	text_color(BRIGHT_MAGENTA)
-	dos_rescue:puts(SCREEN, " Another game? (y or n) ")
+	puts(SCREEN, " Another game? (y or n) ")
 	text_color(YELLOW)
-	answer = dos_rescue:gets(KEYB)
+	answer = gets(KEYB)
 	if atom(answer) or not find('y', lower(answer)) then
 	    exit
 	end if
@@ -927,7 +927,7 @@ procedure ttt()
 end procedure
 
 if graphics_mode(18) then -- VGA
-    dos_rescue:puts(1, "VGA graphics is required\n")
+    puts(1, "VGA graphics is required\n")
 else
     ttt()
 end if

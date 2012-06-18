@@ -5,7 +5,7 @@
 -- function. No call is made to mouse_events(), so by default all events are
 -- reported by get_mouse(). 
 
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 -- include mouse.e
 include mouse_rescue.ew
 -- include graphics.e
@@ -97,28 +97,28 @@ procedure try_mouse()
             end if
             
             if eventNo > 1 then
-                dos_rescue:puts(1, str) 
+                puts(1, str) 
                 line += 1
                 if line > MAX_LINE then
                     line = 1
                 end if
-                dos_rescue:position(line, 1)
+                position(line, 1)
             end if
             
             str = sprintf("event# %4d: %s, x:%4d, y:%4d", 
                    {eventNo, movement, event[2], event[3]})
 
             text_color(BRIGHT_MAGENTA)
-            dos_rescue:puts(1, str)
+            puts(1, str)
             text_color(WHITE)
-            dos_rescue:puts(1, '\n')
+            puts(1, '\n')
             if line < MAX_LINE then
-                dos_rescue:puts(1, repeat(' ', length(str)))
+                puts(1, repeat(' ', length(str)))
             end if
-            dos_rescue:position(line, 1)
+            position(line, 1)
         end if
         
-        if dos_rescue:get_key() != -1 then
+        if get_key() != -1 then
             exit
         end if
     end while
@@ -126,6 +126,6 @@ end procedure
 
 try_mouse()
 
-if dos_rescue:graphics_mode(-1) then
+if graphics_mode(-1) then
 end if
 

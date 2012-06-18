@@ -10,11 +10,11 @@ constant GRAPHICS_MODE = 258 -- SVGA, if this fails try mode 18
 without type_check
 
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 include select.e
 
 include machine.e
--- dos_rescue:use_vesa(1) -- for ATI cards
+-- use_vesa(1) -- for ATI cards
 
 set_delay(10)
 
@@ -37,7 +37,7 @@ function poly_pattern()
     points = rand(repeat(config[VC_XPIXELS..VC_YPIXELS], npoints)) - 1
     deltas = rand(repeat({2*spacing-1, 2*spacing-1}, npoints)) - spacing
     history = {}
-    dos_rescue:clear_screen()
+    clear_screen()
     while TRUE do
 	if length(history) >= nlines then
 	    -- blank out oldest line
@@ -67,7 +67,7 @@ function poly_pattern()
 	    bk_color(rand(ncolors)-1)
 	end if
 	-- see if user wants to quit
-	key = dos_rescue:get_key()
+	key = get_key()
 	if key = ' ' then
 	    return 0
 	elsif key != -1 then

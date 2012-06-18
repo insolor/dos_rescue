@@ -13,7 +13,7 @@
 
 without type_check
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 
 constant DEPTH = 13
 sequence vc
@@ -71,14 +71,14 @@ if in_file = -1 then
     abort(1)
 end if
 
-dos_rescue:clear_screen()
+clear_screen()
 vc = video_config()
 xpixels_per_char = floor(vc[VC_XPIXELS]/80)
 ypixels_per_char = floor(vc[VC_YPIXELS]/25)
 
 gstereo()
 
-while dos_rescue:get_key() = -1 do
+while get_key() = -1 do
 end while
 
 if graphics_mode(-1) then
