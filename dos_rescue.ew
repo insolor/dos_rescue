@@ -871,7 +871,7 @@ procedure toggle_full_screen()
 end procedure
 
 -- Scaling --
-integer scale = 1 -- Scale factor. 1 disables.
+global integer scale = 1 -- 1 disables scaling
 
 -- Text caret routines --
 
@@ -891,12 +891,12 @@ procedure reshape_cursor(integer i)
 end procedure
 
 procedure set_caret_pos(integer line, integer column)
-    c_proc(SetCaretPos,{(column-1)*char_width,(line-1)*char_height+cursor_top})
+    c_proc(SetCaretPos,{(column-1)*char_width,(line-1)*char_height+cursor_top}*scale)
 end procedure
 
 procedure create_caret(atom hwnd)
     reshape_cursor(cursor_shape)
-    c_proc(CreateCaret,{hwnd,NULL,char_width,cursor_bottom-cursor_top+1})
+    c_proc(CreateCaret,{hwnd,NULL,char_width*scale,(cursor_bottom-cursor_top+1)*scale})
     set_caret_pos(cursor_line,cursor_column)
     c_proc(ShowCaret,{hwnd})
 end procedure
