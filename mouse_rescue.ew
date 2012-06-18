@@ -1,3 +1,4 @@
+include std/machine.e
 without warning
 global constant
     MOVE = 1,
