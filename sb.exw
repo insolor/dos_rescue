@@ -4,11 +4,11 @@
 without type_check
 
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 include select.e
 -- include machine.e
 
-dos_rescue:use_vesa(1) -- for modes 256...261
+use_vesa(1) -- for modes 256...261
 -- set_delay(2)
 
 -- constant GRAPHICS_MODE = 18 -- VGA
@@ -50,7 +50,7 @@ procedure bounce()
 	-- wait for screen to settle - looks better
     end while
     while TRUE do
-	if dos_rescue:get_key() != -1 then
+	if get_key() != -1 then
 	    exit
 	end if
 	-- c_proc(Sleep,{10})

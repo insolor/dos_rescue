@@ -11,7 +11,7 @@ with type_check
 
 include get.e
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 include sort.e
 include machine.e
 include file.e
@@ -36,8 +36,8 @@ t = time()
 object y
 
 procedure the_end()
-    dos_rescue:puts(msg, "Press Enter to continue\n")
-    if atom(dos_rescue:gets(0)) then
+    puts(msg, "Press Enter to continue\n")
+    if atom(gets(0)) then
     end if
     if graphics_mode(-1) then
     end if
@@ -58,7 +58,7 @@ end procedure
 without warning
 procedure abort()
 -- force abort with trace back
-    dos_rescue:puts(msg, "\ndivide by 0 to get trace back...Press Enter\n")
+    puts(msg, "\ndivide by 0 to get trace back...Press Enter\n")
     if sequence(gets(0)) then
     end if
     ? 1/0
@@ -69,11 +69,11 @@ constant epsilon = 1e-10 -- allow for small floating point inaccuracy
 
 procedure show(object x, object y)
 -- show the mismatched values
-    dos_rescue:puts(msg, "\n   ---MISMATCH--- \n   x is ")
+    puts(msg, "\n   ---MISMATCH--- \n   x is ")
     ? x
-    dos_rescue:puts(msg, "   y is ")
+    puts(msg, "   y is ")
     ? y
-    dos_rescue:puts(msg, " y - x is ")
+    puts(msg, " y - x is ")
     ? y - x
     abort()
 end procedure
@@ -761,22 +761,22 @@ procedure output()
     if file_no < 0 then
 	abort() 
     end if
-    dos_rescue:puts(file_no, "-- io test\n")
+    puts(file_no, "-- io test\n")
     print(file_no, {1,2,3})
-    dos_rescue:puts(file_no, '\n')
+    puts(file_no, '\n')
     print(file_no, -99)
-    dos_rescue:puts(file_no, " {11, {33, {#33}}, 4, 5 } {\t\t}\n")
-    dos_rescue:puts(file_no, "{} .999 -.999 1.55e00 {11,   22 , {33, 33}, 4, 5  }\n") 
+    puts(file_no, " {11, {33, {#33}}, 4, 5 } {\t\t}\n")
+    puts(file_no, "{} .999 -.999 1.55e00 {11,   22 , {33, 33}, 4, 5  }\n") 
     printf(file_no, "%e", 10000)
     printf(file_no, " %d", -123)
     printf(file_no, " %5.1f", 5+1/2)
     printf(file_no, "%50s\n", {"+99 1001 {1,2,3} 1E-4 {1.002e23,-59e-5,"})
     printf(file_no, "%9e}\t\t-1e-20\t   -.00001e5\n", 59e30)
-    dos_rescue:puts(file_no, "\"Rob\" \"ert\" \"Craig\"  ")
-    dos_rescue:puts(file_no, "\"\" \"\\n\" \"\\t\\r\"\t")
-    dos_rescue:puts(file_no, "\"\\'\\\"\" 'A' '\\n' '\\\"' '\\'' '\\r'\n")
+    puts(file_no, "\"Rob\" \"ert\" \"Craig\"  ")
+    puts(file_no, "\"\" \"\\n\" \"\\t\\r\"\t")
+    puts(file_no, "\"\\'\\\"\" 'A' '\\n' '\\\"' '\\'' '\\r'\n")
     printf(file_no, "{#%x, ", 291)
-    dos_rescue:puts(file_no, "\"ABC\"} {'A', 'B', '\\n'}")  
+    puts(file_no, "\"ABC\"} {'A', 'B', '\\n'}")  
     close(file_no)
 end procedure
 
@@ -911,7 +911,7 @@ procedure testget()
 	i = i + 1
     end while
     if compare(results[i], {-1, 0}) != 0 then
-	dos_rescue:puts(2, "wrong number of get values\n")
+	puts(2, "wrong number of get values\n")
     end if
     close(gd)
 end procedure
@@ -1067,38 +1067,38 @@ procedure corrupt(sequence filename)
     sequence full_name
 
     full_name = lower(eudir & filename)
-    dos_rescue:puts(msg, "\n\n")
+    puts(msg, "\n\n")
     if last_sum = 0 then
-	dos_rescue:puts(msg, full_name & " does not exist. \n")
-	dos_rescue:puts(msg, "The install is not correct. ")
+	puts(msg, full_name & " does not exist. \n")
+	puts(msg, "The install is not correct. ")
     else
 	printf(msg, "%s seems to be incorrect. \n", {full_name})
 	if    last_sum = SUM_EX then
-	    dos_rescue:puts(msg, "It's the Complete Edition ex.exe file. ")
+	    puts(msg, "It's the Complete Edition ex.exe file. ")
 	elsif last_sum = SUM_EXW then
-	    dos_rescue:puts(msg, "It's the Complete Edition exw.exe file. ")
+	    puts(msg, "It's the Complete Edition exw.exe file. ")
 	elsif last_sum = SUM_EXU then
-	    dos_rescue:puts(msg, "It's the Complete Edition exu file. ")
+	    puts(msg, "It's the Complete Edition exu file. ")
 	else                
 	    printf(msg, "Its check-sum (%d) is wrong. \n", last_sum)
-	    dos_rescue:puts(msg, 
+	    puts(msg, 
 	    "Either it's an old version, or it has been corrupted. \n")
-	    dos_rescue:puts(msg, 
+	    puts(msg, 
 	    "You can download the latest version of Euphoria from: \n")
-	    dos_rescue:puts(msg, "    http://www.RapidEuphoria.com/ ")
+	    puts(msg, "    http://www.RapidEuphoria.com/ ")
 	end if
     end if
-    dos_rescue:puts(msg, "\n\n\n")
+    puts(msg, "\n\n\n")
     the_end()
 end procedure
 
 procedure reboot_msg()
     if plat = LINUX then
-	dos_rescue:puts(msg, "Did you forget to edit your profile and log in again?\n")
+	puts(msg, "Did you forget to edit your profile and log in again?\n")
     else    
-	dos_rescue:puts(msg, "Did you forget to reboot (restart) your machine?\n")
+	puts(msg, "Did you forget to reboot (restart) your machine?\n")
     end if
-    dos_rescue:puts(msg, "See INSTALL.DOC\n")
+    puts(msg, "See INSTALL.DOC\n")
     the_end()
 end procedure
 
@@ -1109,7 +1109,7 @@ procedure check_install(integer doit)
     integer ex_sum, slash
     
     if not doit then
-	-- dos_rescue:puts(1, "skipping checksum - press Enter\n")
+	-- puts(1, "skipping checksum - press Enter\n")
 	-- if getc(0) then
 	-- end if
 	return
@@ -1117,13 +1117,13 @@ procedure check_install(integer doit)
     
     path = getenv("PATH")
     if atom(path) then
-	dos_rescue:puts(msg, "Note: Your PATH variable has not been set.\n")
+	puts(msg, "Note: Your PATH variable has not been set.\n")
 	reboot_msg()
     end if
     
     eudir = getenv("EUDIR")
     if atom(eudir) then
-	dos_rescue:puts(msg, "Note: Your EUDIR variable has not been set.\n")
+	puts(msg, "Note: Your EUDIR variable has not been set.\n")
 	reboot_msg()
     end if
     
@@ -1139,7 +1139,7 @@ procedure check_install(integer doit)
     end if
     
     if not match(temp_eudir & SLASH & "BIN", wild:upper(path)) then
-	dos_rescue:puts(msg, "Note: " & eudir & SLASH & "BIN is not on your PATH.\n")
+	puts(msg, "Note: " & eudir & SLASH & "BIN is not on your PATH.\n")
 	reboot_msg()
     end if
 
@@ -1188,11 +1188,11 @@ global procedure sanity()
 	end if
     else
 	-- some text mode tests
-	dos_rescue:clear_screen()
-	dos_rescue:position(1,1)
-	dos_rescue:puts(1, "ABC")
-	dos_rescue:position(2,1)
-	dos_rescue:puts(1, "def")
+	clear_screen()
+	position(1,1)
+	puts(1, "ABC")
+	position(2,1)
+	puts(1, "def")
 	
 	s1 = save_text_image({1,1}, {2,3})
 	display_text_image({10,20}, s1)
@@ -1204,12 +1204,12 @@ global procedure sanity()
 	-- graphics mode and other tests
 	vga = not graphics_mode(18) 
 	v = video_config()
-	dos_rescue:clear_screen()
-	dos_rescue:position(12, 20)
+	clear_screen()
+	position(12, 20)
 	if compare({12, 20}, get_position()) != 0 then
 	    abort()
 	end if
-	dos_rescue:puts(msg, "DOS_RESCUE SANITY TEST ... ")
+	puts(msg, "DOS_RESCUE SANITY TEST ... ")
     end if
 
     if plat = WIN32 then
@@ -1237,7 +1237,7 @@ global procedure sanity()
 	overflow()
 	floating_pt()
 	if compare(sequence_ops(), "BCDE") != 0 then
-	    dos_rescue:puts(msg, "sequence_ops failed\n")
+	    puts(msg, "sequence_ops failed\n")
 	end if
 	sequence_ops2()
 	circularity()
@@ -1250,17 +1250,17 @@ global procedure sanity()
 	rp = 100
 	recursive_proc()
 	if rp != 0 then
-	    dos_rescue:puts(msg, "recursive proc failed\n")
+	    puts(msg, "recursive proc failed\n")
 	end if
 	if fib(20) != 6765 then
-	    dos_rescue:puts(msg, "fib failed\n")
+	    puts(msg, "fib failed\n")
 	end if
  
 	if not sorted(sort(-500 + rand(repeat(1000, 1000)))) then
-	    dos_rescue:puts(msg, "standard sort failed\n")
+	    puts(msg, "standard sort failed\n")
 	end if
 	if not sorted(sort({"robert", "junko", "dave", "ken", "lurdes"})) then
-	    dos_rescue:puts(msg, "standard general sort failed\n")
+	    puts(msg, "standard general sort failed\n")
 	end if
 
     end for
@@ -1287,7 +1287,7 @@ global procedure sanity()
     if plat = WIN32 then
 	ok = message_box("PASSED (100%)", "Euphoria WIN32 Sanity Test", MB_OK)
     else
-	dos_rescue:puts(msg, "\nPASSED (100%)\n")
+	puts(msg, "\nPASSED (100%)\n")
 	the_end()    
     end if
 end procedure

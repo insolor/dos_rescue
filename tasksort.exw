@@ -9,10 +9,10 @@
 without type_check
 
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 include file.e
 
-if dos_rescue:graphics_mode(18) then
+if graphics_mode(18) then
 end if
 
 constant COLOR = {WHITE, RED, BLUE, GREEN}
@@ -183,25 +183,25 @@ end function
 sequence data, data1, data2, data3, data4
 
 procedure init()
-    dos_rescue:clear_screen()
+    clear_screen()
 
     for i=1 to 4 do
 	show_sequence(i, data)
     end for
 
-    dos_rescue:position(1,1)
+    position(1,1)
 
     text_color(COLOR[1])
-    dos_rescue:puts(1, "  Bubble Sort")
+    puts(1, "  Bubble Sort")
     
     text_color(COLOR[2])
-    dos_rescue:puts(1, "        Insertion Sort")
+    puts(1, "        Insertion Sort")
     
     text_color(COLOR[3])
-    dos_rescue:puts(1, "         Shell Sort")
+    puts(1, "         Shell Sort")
     
     text_color(COLOR[4])
-    dos_rescue:puts(1, "          Quick Sort")
+    puts(1, "          Quick Sort")
 end procedure
 
 
@@ -252,7 +252,7 @@ task_schedule(t_shell, 1)
 task_schedule(t_quick, 1)
 task_schedule(0, {0.2, 0.2}) -- initial, top-level task checks keyboard every second
 
-while dos_rescue:get_key() = -1 do
+while get_key() = -1 do
     task_yield()
 end while
 

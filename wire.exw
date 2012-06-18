@@ -8,10 +8,10 @@ without type_check
 
 without warning
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 include select.e
 include machine.e
-dos_rescue:use_vesa(1)  -- for ATI cards if you use SVGA
+use_vesa(1)  -- for ATI cards if you use SVGA
 
 set_delay(10)
 
@@ -263,11 +263,11 @@ procedure spin(sequence shape)
 	    display({}, coords)
 	end if
 	history = append(history, coords)
-	c = dos_rescue:get_key()
+	c = get_key()
 	if c != -1 then
 	    if c = ' ' then
 		while TRUE do
-		    c = dos_rescue:get_key()
+		    c = get_key()
 		    if c != -1 and c != ' ' then
 			return
 		    elsif c = ' ' then
@@ -311,7 +311,7 @@ else
     vc = video_config()
     bk_color(7)
     text_color(5)
-    dos_rescue:clear_screen()
+    clear_screen()
     spin(E)
     bk_color(0)
     if graphics_mode(-1) then

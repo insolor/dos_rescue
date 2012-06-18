@@ -18,11 +18,11 @@ constant GRAPHICS_MODE = 18
 without type_check
 
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 include select.e
 
 include machine.e
-dos_rescue:use_vesa(1) -- FOR ATI cards
+use_vesa(1) -- FOR ATI cards
 
 constant NFUNCS = 6
 constant c = sqrt(2.0) / 2
@@ -169,7 +169,7 @@ procedure plot(atom x, atom y)
     -- select color by quadrant
     col = (z >= 0) * 8 + (x >= 0) * 2 + (y >= 0) + 1
     if length(prev_coord) = 0 then
-	dos_rescue:pixel(col, coord)
+	pixel(col, coord)
     else
 	draw_line(col, {prev_coord, coord})
     end if
@@ -180,7 +180,7 @@ function plot_a_function()
 -- generate 3d plotted graph
 
     for x = x_min to x_max by grid_width * x_inc do
-	if dos_rescue:get_key() != -1 then
+	if get_key() != -1 then
 	    return 0
 	end if
 	prev_coord = {}
@@ -190,7 +190,7 @@ function plot_a_function()
     end for
 
     for y = y_min to y_max by grid_width * y_inc do
-	if dos_rescue:get_key() != -1 then
+	if get_key() != -1 then
 	    return 0
 	end if
 	prev_coord = {}
@@ -215,7 +215,7 @@ procedure plot3d()
 	grid_width = 20
 	fine = 4
 	if plot_a_function() then
-	    dos_rescue:clear_screen()
+	    clear_screen()
 	    box()
 	    -- make next one fit screen better
 	    v_magnifier = (y_res - 1) / (yc_max - yc_min)
@@ -225,18 +225,18 @@ procedure plot3d()
 	    grid_width = 20
 	    fine = 1
 	    if plot_a_function() then
-		dos_rescue:position(2, 2)
-		dos_rescue:printf(SCREEN, "x: %5.1f to %4.1f", {x_min, x_max})
-		dos_rescue:position(3, 2)
-		dos_rescue:printf(SCREEN, "y: %5.1f to %4.1f", {y_min, y_max})
-		dos_rescue:position(4, 2)
-		dos_rescue:printf(SCREEN, "z: %5.1f to %4.1f", {z_min, z_max})
-		while dos_rescue:get_key() = -1 do
+		position(2, 2)
+		printf(SCREEN, "x: %5.1f to %4.1f", {x_min, x_max})
+		position(3, 2)
+		printf(SCREEN, "y: %5.1f to %4.1f", {y_min, y_max})
+		position(4, 2)
+		printf(SCREEN, "z: %5.1f to %4.1f", {z_min, z_max})
+		while get_key() = -1 do
 		end while
 	    end if
 	end if
 	func_no += 1
-	dos_rescue:clear_screen()
+	clear_screen()
     end while
 end procedure
 

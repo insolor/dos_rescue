@@ -24,11 +24,11 @@ constant GRAPHICS_MODE = 257
 without type_check
 
 -- include image.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 include select.e
 -- include get.e
 
-dos_rescue:use_vesa(1) -- for ATI cards
+use_vesa(1) -- for ATI cards
 
 constant ZOOM_FACTOR = 20    -- grid size for zooming in
 
@@ -101,7 +101,7 @@ function zoom()
     box = {0, ZOOM_FACTOR-1}
     while TRUE do
 	grid({box[1], box[1]+1}, {box[2], box[2]+1}, rand(15))
-	key = dos_rescue:get_key()
+	key = get_key()
 	if key != -1 then
 	    grid({box[1], box[1]+1}, {box[2], box[2]+1}, 7)
 	    if key = ARROW_UP then
@@ -146,7 +146,7 @@ procedure mset(complex lower_left,  -- lower left corner
     natural member, stop, color, width, height
     sequence color_line
     
-    dos_rescue:clear_screen()
+    clear_screen()
     height = vc[VC_YPIXELS]
     width = vc[VC_XPIXELS]
     color_line = repeat(0, width)
@@ -155,7 +155,7 @@ procedure mset(complex lower_left,  -- lower left corner
     c = {0, 0}
     
     for y = 0 to height - 1 do
-	if dos_rescue:get_key() != -1 then
+	if get_key() != -1 then
 	    return 
 	end if
 	c[IMAG] = upper_right[IMAG] - y * ysize
@@ -245,7 +245,7 @@ procedure Mandelbrot()
 	while 1 do
 	    t = time() + 5
 	    while time() < t do
-		c = dos_rescue:get_key()
+		c = get_key()
 		if c != -1 then
 		    exit
 		end if
@@ -261,7 +261,7 @@ procedure Mandelbrot()
 	end if
 	
 	-- clear the keyboard buffer
-	while dos_rescue:get_key() != -1 do
+	while get_key() != -1 do
 	end while
 	
 	new_box = zoom()

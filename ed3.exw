@@ -23,7 +23,7 @@
 --   containing the lines of text, and for updating the screen to reflect any
 --   changes. This code is typically fairly simple, but there can be a lot
 --   of special cases to worry about.
--- * Finally, ed writes back each line, using dos_rescue:puts()
+-- * Finally, ed writes back each line, using puts()
 -- * How multiple-windows works: When you switch to a new window, all the 
 --   variables associated with the current window are bundled together and 
 --   saved in a sequence, along with the 2-d text buffer for that window.
@@ -33,7 +33,7 @@
 without type_check -- makes it a bit faster
 
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 -- include get.e
 include file.e
 include wildcard.e
@@ -463,7 +463,7 @@ end procedure
 procedure set_absolute_position(natural window_line, positive_int column)
 -- move cursor to a line and an absolute (non-shifted) column within
 -- the current window
-    dos_rescue:position(window_base + window_line, column)
+    position(window_base + window_line, column)
 end procedure
 
 procedure DisplayLine(buffer_line bline, window_line sline, boolean all_clear)
@@ -486,11 +486,11 @@ procedure DisplayLine(buffer_line bline, window_line sline, boolean all_clear)
 	    len = length(text)
 	    if last_pos >= s_shift then
 		text_color(color)
-		dos_rescue:puts(SCREEN, text)
+		puts(SCREEN, text)
 	    elsif last_pos+len > s_shift then
 		-- partly left-of-screen
 		text_color(color)
-		dos_rescue:puts(SCREEN, text[1+(s_shift-last_pos)..len])
+		puts(SCREEN, text[1+(s_shift-last_pos)..len])
 		last_pos += len
 	    else
 		-- left-of-screen
@@ -500,7 +500,7 @@ procedure DisplayLine(buffer_line bline, window_line sline, boolean all_clear)
     else
 	-- monochrome display
 	if last > s_shift then
-	    dos_rescue:puts(SCREEN, this_line[1+s_shift..last])
+	    puts(SCREEN, this_line[1+s_shift..last])
 	end if
     end if
     if last-s_shift > screen_width then
@@ -508,10 +508,10 @@ procedure DisplayLine(buffer_line bline, window_line sline, boolean all_clear)
 	set_absolute_position(sline, screen_width)
 	text_color(BACKGROUND_COLOR)
 	bk_color(NORMAL_COLOR)
-	dos_rescue:puts(SCREEN, this_line[screen_width+s_shift])
+	puts(SCREEN, this_line[screen_width+s_shift])
 	normal_video()
     elsif not all_clear then
-	dos_rescue:puts(SCREEN, BLANK_LINE)
+	puts(SCREEN, BLANK_LINE)
     end if
 end procedure
 
@@ -544,14 +544,14 @@ end procedure
 with warning
 
 procedure set_position(natural window_line, positive_int column)
--- Move cursor to a logical screen dos_rescue:position within the window.
+-- Move cursor to a logical screen position within the window.
 -- The window will be shifted left<->right if necessary.
 -- window_line 0 is status line, window_line 1 is first line of text
     natural s
     
     if window_line = 0 then
 	-- status line
-	dos_rescue:position(window_base + window_line, column)
+	position(window_base + window_line, column)
     else
 	s = s_shift
 	while column-s_shift > screen_width do
@@ -564,7 +564,7 @@ procedure set_position(natural window_line, positive_int column)
 	    -- display shifted window
 	    DisplayWindow(b_line - s_line + 1, 1)
 	end if
-	dos_rescue:position(window_base + window_line, column-s_shift)
+	position(window_base + window_line, column-s_shift)
     end if
 end procedure
 
@@ -641,7 +641,7 @@ procedure set_top_line(sequence message)
 -- print message on top line
     set_position(0, 1)
     reverse_video()
-    dos_rescue:puts(SCREEN, message & BLANK_LINE)
+    puts(SCREEN, message & BLANK_LINE)
     set_position(0, length(message)+1)
 end procedure
 
@@ -897,10 +897,10 @@ procedure set_f_line(natural w, sequence comment)
 	f_key = 'F' & ('0' + w) & ": "
     end if
     set_top_line("")
-    dos_rescue:puts(SCREEN, ' ' & f_key & file_name & comment)
+    puts(SCREEN, ' ' & f_key & file_name & comment)
     text = "Esc for commands"
     set_position(0, screen_width - length(text))
-    dos_rescue:puts(SCREEN, text)
+    puts(SCREEN, text)
 end procedure
 
 constant W_BUFFER_NUMBER = 1,
@@ -1088,7 +1088,7 @@ function next_key()
 	end if
 	if c = ESCAPE then
 	    -- process escape sequence
-	    c = dos_rescue:get_key()
+	    c = get_key()
 	    if c = -1 then
 		return ESCAPE -- it was just the Esc key
 	    end if
@@ -1114,7 +1114,7 @@ function next_key()
 		    end if
 
 		elsif c = 91 then
-		    c = dos_rescue:get_key()
+		    c = get_key()
 	
 		    if c >= 65 and c <= 68 then
 			if c = 65 then
@@ -1128,16 +1128,16 @@ function next_key()
 			end if
  
 		    elsif c >= 49 and c <= 54 then
-			c2 = dos_rescue:get_key()
+			c2 = get_key()
 			if c = 49 then 
 			    if c2 = 126 then
 				return HOME
 			    elsif c2 >= 49 and c2 <= 53 then
-				if dos_rescue:get_key() then --126
+				if get_key() then --126
 				end if
 				return F1+c2-49
 			    elsif c2 >= 55 and c2 <= 57 then
-				if dos_rescue:get_key() then -- 126
+				if get_key() then -- 126
 				end if
 				return F1+c2-50
 			    end if
@@ -1145,7 +1145,7 @@ function next_key()
 			    if c2 = 126 then
 				return INSERT
 			    elsif c2 >= 48 and c2 <= 52 then
-				if dos_rescue:get_key() then -- 126
+				if get_key() then -- 126
 				end if
 				-- F11,F12 are not totally standard
 				if c2 = 51 then
@@ -1176,8 +1176,8 @@ function next_key()
 			return END
 	
 		    else -- obsolete?
-			c = dos_rescue:get_key()
-			if dos_rescue:get_key() then -- 126
+			c = get_key()
+			if get_key() then -- 126
 			end if
 			add_queue({91, 49, c, 126})
 		    end if    
@@ -1198,9 +1198,9 @@ function next_key()
 		    end if
 		
 		elsif c = 91 then
-		    c = dos_rescue:get_key() -- 49
-		    c = dos_rescue:get_key()
-		    if dos_rescue:get_key() then -- 126
+		    c = get_key() -- 49
+		    c = get_key()
+		    if get_key() then -- 126
 		    end if
 		    if c >= 49 and c <= 60 then
 			return F1+c-49 -- only F1..F4 are like this
@@ -1255,10 +1255,10 @@ function key_gets(sequence hot_keys, sequence history)
     first_key = TRUE
     
     while TRUE do
-	dos_rescue:position(line, init_column)
-	dos_rescue:puts(SCREEN, input_string)
-	dos_rescue:puts(SCREEN, BLANK_LINE)
-	dos_rescue:position(line, column)
+	position(line, init_column)
+	puts(SCREEN, input_string)
+	puts(SCREEN, BLANK_LINE)
+	position(line, column)
 	
 	char = next_key()
 	
@@ -1398,7 +1398,7 @@ procedure replace()
     line = line[1..b_col-1] & replace_string & line[b_col+length(find_string)..
 						length(line)]
     buffer[b_line] = line
-    -- dos_rescue:position at end of replacement string
+    -- position at end of replacement string
     for i = 1 to length(replace_string)-1 do
 	arrow_right()
     end for
@@ -1442,12 +1442,12 @@ function search(boolean cont)
     
     set_top_line("")
     if length(buffer) = 0 then
-	dos_rescue:puts(SCREEN, "buffer empty")
+	puts(SCREEN, "buffer empty")
 	return FALSE
     end if
-    dos_rescue:puts(SCREEN, "searching for: ")
+    puts(SCREEN, "searching for: ")
     if cont then
-	dos_rescue:puts(SCREEN, find_string)
+	puts(SCREEN, find_string)
     else
 	pos = get_position()
 	temp_string = find_string
@@ -1458,7 +1458,7 @@ function search(boolean cont)
 		search_history = update_history(search_history, find_string)
 		if alphabetic(find_string) and length(find_string) < 40 then
 		    set_position(0, pos[2]+length(find_string)+3)
-		    dos_rescue:puts(SCREEN, "match case? n")
+		    puts(SCREEN, "match case? n")
 		    pos = get_position()
 		    set_position(0, pos[2] - 1)
 		    match_case = find('y', key_gets("", {}))
@@ -1466,7 +1466,7 @@ function search(boolean cont)
 	    end if
 	    if replacing then
 		set_top_line("")
-		dos_rescue:puts(SCREEN, "replace with: ")
+		puts(SCREEN, "replace with: ")
 		replace_string = key_gets("", replace_history)
 		replace_history = update_history(replace_history, 
 						 replace_string)
@@ -1480,7 +1480,7 @@ function search(boolean cont)
     end if
     col = case_match(find_string, buffer[b_line][b_col+1..length(buffer[b_line])])
     if col then
-	-- found it on this line after current dos_rescue:position
+	-- found it on this line after current position
 	for i = 1 to col do
 	    arrow_right()
 	end for
@@ -1501,17 +1501,17 @@ function search(boolean cont)
 		    replace()
 		end if
 		set_top_line("")
-		dos_rescue:printf(SCREEN, "searching for: %s", {find_string})
+		printf(SCREEN, "searching for: %s", {find_string})
 		return TRUE
 	    end if
 	end for
 	set_top_line("")
-	dos_rescue:printf(SCREEN, "\"%s\" not found", {find_string})
+	printf(SCREEN, "\"%s\" not found", {find_string})
 	if alphabetic(find_string) then
 	    if match_case then
-		dos_rescue:puts(SCREEN, "  (case must match)")
+		puts(SCREEN, "  (case must match)")
 	    else
-		dos_rescue:puts(SCREEN, "  (any case)")
+		puts(SCREEN, "  (any case)")
 	    end if
 	end if
     end if
@@ -1522,7 +1522,7 @@ procedure show_message()
 -- display error message from ex.err
     if length(error_message) > 0 then
 	set_top_line("")
-	dos_rescue:puts(SCREEN, error_message)
+	puts(SCREEN, error_message)
 	normal_video()
     end if
     set_position(s_line, s_col)
@@ -1633,7 +1633,7 @@ procedure save_file(sequence save_name)
     
     if control_chars then
 	set_top_line("")
-	dos_rescue:printf(SCREEN, "%s: control chars were changed to " & CONTROL_CHAR &
+	printf(SCREEN, "%s: control chars were changed to " & CONTROL_CHAR &
 		       " - save anyway? ", {save_name})
 	if not find('y', key_gets("yn", {})) then
 	    stop = FALSE
@@ -1643,19 +1643,19 @@ procedure save_file(sequence save_name)
     strip_cr = FALSE
     if cr_removed then
 	set_top_line("")
-	dos_rescue:printf(SCREEN, "%s: Convert CR-LF (DOS-style) to LF (Linux-style)? ", 
+	printf(SCREEN, "%s: Convert CR-LF (DOS-style) to LF (Linux-style)? ", 
 		     {save_name})
 	strip_cr = find('y', key_gets("yn", {}))
     end if
     set_top_line("")
     file_no = open(save_name, "w")
     if file_no = -1 then
-	dos_rescue:printf(SCREEN, "Can't save %s - write permission denied", 
+	printf(SCREEN, "Can't save %s - write permission denied", 
 	      {save_name})
 	stop = FALSE
 	return
     end if
-    dos_rescue:printf(SCREEN, "saving %s ... ", {save_name})
+    printf(SCREEN, "saving %s ... ", {save_name})
     for i = 1 to length(buffer) do
 	line = buffer[i]
 	if cr_removed and not strip_cr then
@@ -1665,14 +1665,14 @@ procedure save_file(sequence save_name)
 		line = line[1..length(line)-1] & "\r\n"
 	    end if
 	end if
-	dos_rescue:puts(file_no, convert_tabs(edit_tab_width, STANDARD_TAB_WIDTH, line))
+	puts(file_no, convert_tabs(edit_tab_width, STANDARD_TAB_WIDTH, line))
     end for
     close(file_no)
     if strip_cr then
 	-- the file doesn't have CR's
 	cr_removed = FALSE 
     end if
-    dos_rescue:puts(SCREEN, "ok")
+    puts(SCREEN, "ok")
     if equal(save_name, file_name) then
 	clear_modified()
     end if
@@ -1687,7 +1687,7 @@ procedure shell(sequence command)
     clear_screen()
     system(command, 1)
     normal_video()
-    while dos_rescue:get_key() != -1 do
+    while get_key() != -1 do
 	-- clear the keyboard buffer
     end while
     refresh_all_windows()
@@ -1696,9 +1696,9 @@ end procedure
 procedure first_bold(sequence string)
 -- highlight first char
     text_color(TOP_LINE_TEXT_COLOR)
-    dos_rescue:puts(SCREEN, string[1])
+    puts(SCREEN, string[1])
     text_color(TOP_LINE_DIM_COLOR)
-    dos_rescue:puts(SCREEN, string[2..length(string)])
+    puts(SCREEN, string[2..length(string)])
 end procedure
 
 procedure delete_editbuff()
@@ -1739,7 +1739,7 @@ procedure get_escape(boolean help)
 	first_bold("lines ")
 	first_bold("mods ")
 	text_color(TOP_LINE_TEXT_COLOR)
-	dos_rescue:puts(SCREEN, "ddd CR: ")
+	puts(SCREEN, "ddd CR: ")
 	command = key_gets("hcqswnedfrlm", {}) & ' '
     end if
 
@@ -1768,7 +1768,7 @@ procedure get_escape(boolean help)
 	if modified and last_use() then
 	    while TRUE do
 		set_top_line("")
-		dos_rescue:printf(SCREEN, "save changes to %s? ", {file_name})
+		printf(SCREEN, "save changes to %s? ", {file_name})
 		answer = key_gets("yn", {})
 		if find('y', answer) then
 		    save_file(file_name)
@@ -1892,21 +1892,21 @@ procedure get_escape(boolean help)
 	goto_line(line, 1)
 	if not buffer_line(line) then
 	    set_top_line("")
-	    dos_rescue:printf(SCREEN, "lines are 1..%d", length(buffer))
+	    printf(SCREEN, "lines are 1..%d", length(buffer))
 	end if
 
     else
 	set_top_line("")
 	if length(buffer) = 0 then
-	    dos_rescue:puts(SCREEN, "empty buffer")
+	    puts(SCREEN, "empty buffer")
 	else
-	    dos_rescue:printf(SCREEN, "%s line %d of %d, column %d of %d, ",
+	    printf(SCREEN, "%s line %d of %d, column %d of %d, ",
 		       {file_name, b_line, length(buffer), s_col,
 			length(expand_tabs(edit_tab_width, buffer[b_line]))-1})
 	    if modified then
-		dos_rescue:puts(SCREEN, "modified")
+		puts(SCREEN, "modified")
 	    else
-		dos_rescue:puts(SCREEN, "not modified")
+		puts(SCREEN, "not modified")
 	    end if
 	end if
     end if
@@ -1915,7 +1915,7 @@ procedure get_escape(boolean help)
 end procedure
 
 procedure insert(char key)
--- insert a character into the current line at the current dos_rescue:position
+-- insert a character into the current line at the current position
 
     sequence tail
 
@@ -1964,7 +1964,7 @@ procedure insert(char key)
 end procedure
 
 procedure insert_string(sequence text)
--- insert a bunch of characters at the current dos_rescue:position
+-- insert a bunch of characters at the current position
     natural save_line, save_col
 
     save_line = b_line
@@ -2048,7 +2048,7 @@ procedure try_auto_complete(char key)
 end procedure
 
 procedure insert_kill_buffer()
--- insert the kill buffer at the current dos_rescue:position
+-- insert the kill buffer at the current position
 -- kill buffer could be a sequence of lines or a sequence of characters
 
     if length(kill_buffer) = 0 then
@@ -2100,7 +2100,7 @@ procedure delete_line(buffer_line dead_line)
 end procedure
 
 procedure delete_char()
--- delete the character at the current dos_rescue:position
+-- delete the character at the current position
     char dchar
     sequence head
     natural save_b_col
@@ -2192,7 +2192,7 @@ procedure edit_file()
 		    switch_window(key - F1 + 1)
 		else
 		    set_top_line("")
-		    dos_rescue:printf(SCREEN, "F%d is not an active window", key - F1 + 1)
+		    printf(SCREEN, "F%d is not an active window", key - F1 + 1)
 		    normal_video()
 		end if
 		adding_to_kill = FALSE
@@ -2349,10 +2349,10 @@ procedure ed(sequence command)
     wrap(0)
     if length(file_name) = 0 then
 	-- we still don't know the file name - so ask user
-	dos_rescue:puts(SCREEN, "file name: ")
+	puts(SCREEN, "file name: ")
 	cursor(ED_CURSOR)
 	file_name = key_gets("", file_history)
-	dos_rescue:puts(SCREEN, '\n')
+	puts(SCREEN, '\n')
     end if
     file_name = delete_trailing_white(file_name)
     if length(file_name) = 0 then
@@ -2406,7 +2406,7 @@ procedure ed(sequence command)
     b_line = 1
     b_col = 1
     save_state()
-    while dos_rescue:get_key() != -1 do
+    while get_key() != -1 do
 	-- clear the keyboard buffer 
 	-- to reduce "key bounce" problems
     end while
@@ -2465,10 +2465,10 @@ procedure ed_main()
     cursor(UNDERLINE_CURSOR)
     bk_color(BLACK)
     text_color(WHITE)
-    dos_rescue:position(screen_length, 1)
-    dos_rescue:puts(SCREEN, BLANK_LINE)
-    dos_rescue:position(screen_length, 1)
-    dos_rescue:puts(SCREEN, "\n")
+    position(screen_length, 1)
+    puts(SCREEN, BLANK_LINE)
+    position(screen_length, 1)
+    puts(SCREEN, "\n")
 end procedure
 
 ed_main()

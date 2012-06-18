@@ -2,7 +2,7 @@
 	-- in 50 lines-per-screen mode  
 
 -- include graphics.e
-include dos_rescue.ew as dos_rescue
+include dos_rescue.ew
 
 constant SCREEN = 1
 
@@ -12,33 +12,33 @@ end if
 text_color(WHITE)
 for i = 0 to 255 do
     if remainder(i, 8) = 0 then 
-	dos_rescue:puts(SCREEN, '\n')
+	puts(SCREEN, '\n')
 	if i = 128 and platform() = LINUX then
-	    if dos_rescue:getc(0) then
+	    if getc(0) then
 	    end if
 	end if
     end if
     if remainder(i, 32) = 0 then
-	dos_rescue:puts(SCREEN, '\n')
+	puts(SCREEN, '\n')
     end if
-    dos_rescue:printf(SCREEN, "%3d: ", i)
+    printf(SCREEN, "%3d: ", i)
     if i = 0 then
-	dos_rescue:puts(SCREEN, "NUL ")
+	puts(SCREEN, "NUL ")
     elsif i = 9 then
-	dos_rescue:puts(SCREEN, "TAB ")
+	puts(SCREEN, "TAB ")
     elsif i = 10 then
-	dos_rescue:puts(SCREEN, "LF  ")
+	puts(SCREEN, "LF  ")
     elsif i = 13 then
-	dos_rescue:puts(SCREEN, "CR  ")
+	puts(SCREEN, "CR  ")
     else
-	dos_rescue:puts(SCREEN, i)
-	dos_rescue:puts(SCREEN, "   ")
+	puts(SCREEN, i)
+	puts(SCREEN, "   ")
     end if
 end for
 
 text_color(WHITE)
-dos_rescue:puts(SCREEN, "\n\nPress Enter...")
-if atom(dos_rescue:gets(0)) then
+puts(SCREEN, "\n\nPress Enter...")
+if atom(gets(0)) then
 end if
 
 if graphics_mode(-1) then

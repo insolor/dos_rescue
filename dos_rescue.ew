@@ -1180,11 +1180,7 @@ procedure clear_region(integer x1, integer y1, integer x2, integer y2)
     c_proc(FillRect, hdcActive & rect & brushes[1+last_bk_color])
 end procedure
 
-procedure eu_clear_screen()
-    clear_screen()
-end procedure
-
-global procedure clear_screen()
+override procedure clear_screen()
 -- override Euphoria built-in
     sequence blank
     if hwnd then
@@ -1201,6 +1197,8 @@ global procedure clear_screen()
         end if
         
         repaint = TRUE
+    else
+        eu:clear_screen()
     end if
 end procedure
 
@@ -1818,19 +1816,15 @@ end procedure
 
 wrap(1)
 
-procedure eu_position(integer line, integer column)
-    position(line,column)
-end procedure
-
 procedure new_line()
     cursor_column = 1 -- CR
     cursor_line += 1 -- LF
 end procedure
 
-global procedure position(integer line, integer column)
+override procedure position(integer line, integer column)
 -- override Euphoria built-in
     if not window_ready then
-        eu_position(line,column)
+        eu:position(line,column)
     else
         cursor_line = line
         cursor_column = column
@@ -1878,9 +1872,9 @@ function tab_spaces(integer tab_width, integer pos)
     return tab_width-remainder(pos,tab_width)
 end function
 
-procedure eu_puts(integer fn, object str)
-    puts(fn,str)
-end procedure
+-- procedure eu_puts(integer fn, object str)
+    -- puts(fn,str)
+-- end procedure
 
 -- Code adopted from ed.ex {{
 constant tab_width = 8
@@ -1912,13 +1906,13 @@ function expand_tabs(sequence s, integer column)
 end function
 -- }}
 
-global procedure puts(integer fn, object str)
+override procedure puts(integer fn, object str)
 -- override Euphoria built-in
     sequence pos
     sequence substr
     integer i,j,len
     if not window_ready or fn != STDOUT then
-        eu_puts(fn,str) -- eu:puts(fn,str)
+        eu:puts(fn,str)
     else
         if atom(str) then
             str = {str}
@@ -1972,30 +1966,22 @@ global procedure puts(integer fn, object str)
     end if
 end procedure
 
-procedure eu_printf(integer fn, sequence format, object x)
-    printf(fn,format,x)
-end procedure
-
-global procedure printf(integer fn, sequence format, object x)
+override procedure printf(integer fn, sequence format, object x)
 -- override Euphoria built-in 
     sequence s
     if not window_ready or fn != STDOUT then
-        eu_printf(fn,format,x) -- eu:printf
+        eu:printf(fn,format,x)
     else
         s = sprintf(format, x)
         puts(fn,s)
     end if
 end procedure
 
-procedure eu_print(integer fn, object x)
-    print(fn,x)
-end procedure
-
-global procedure print(integer fn, object x)
+override procedure print(integer fn, object x)
 -- override Euphoria built-in 
     sequence s
     if not window_ready or fn != STDOUT then
-        eu_print(fn,x)
+        eu:print(fn,x)
     else
         s = sprint(x)
         puts(fn,s)
@@ -2004,22 +1990,18 @@ end procedure
 
 -- STDIN routines --
 
-function eu_get_key()
-    return get_key()
-end function
-
 integer delay
 delay = 1
 global procedure set_delay(integer i)
     delay = i
 end procedure
 
-global function get_key()
+override function get_key()
 -- override Euphoria built-in
 -- get next character sent to graphics window
     integer c
     if not window_ready then
-        return eu_get_key()
+        return eu:get_key()
     else
         task_yield()
         if length(char_buff) = 0 then
@@ -2050,11 +2032,7 @@ global function wait_key()
     return c
 end function
 
-function eu_gets(integer fn)
-    return gets(fn)
-end function
-
-global function gets(integer fn)
+override function gets(integer fn)
 -- override Euphoria built-in 
     sequence p
     integer k
@@ -2062,7 +2040,7 @@ global function gets(integer fn)
     integer len,size
     
     if not window_ready or fn != STDIN then
-        return eu_gets(fn)
+        return eu:gets(fn)
     elsif length(getc_buffer) then
         buf = getc_buffer
         getc_buffer = {}
@@ -2105,16 +2083,11 @@ global function gets(integer fn)
     end if
 end function
 
-global
-function eu_getc(integer fn)
-    return getc(fn)
-end function
-
-global function getc(integer fn)
+override function getc(integer fn)
 -- override Euphoria built-in 
     integer c
     if not window_ready or fn != STDIN then
-        return eu_getc(fn)
+        return eu:getc(fn)
     elsif length(getc_buffer) = 0 then
         getc_buffer = gets(fn)
     end if
