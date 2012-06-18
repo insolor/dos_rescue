@@ -451,10 +451,6 @@ global function video_config()
     return vc[1..VC_PAGES]
 end function
 
-function get_color_map()
-    return vc[VC_COLOR_MAP]
-end function
-
 -- Difinitions of palettes and palette routines --
 
 -- COLOR values -- for characters and pixels
@@ -776,7 +772,7 @@ procedure init_window(atom hwnd)
     
     -- Initialize palette
     ncolors = vc[VC_NCOLORS]
-    color_map = get_color_map()
+    color_map = vc[VC_COLOR_MAP]
     color_mask = ncolors-1
     if length(brushes) = 0 then
         s = repeat(0,ncolors)
