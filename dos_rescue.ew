@@ -7,7 +7,7 @@ without warning
 
 include std/machine.e
 include std/dll.e
-include std/math.e -- for or_all()
+include std/math.e -- for or_all(), min()
 include std/convert.e -- for bytes_to_int() etc.
 include std/error.e -- for crash()
 include std/text.e -- for sprint()
@@ -706,6 +706,15 @@ function create_dib_section(atom hdc, integer width, integer height, sequence co
     return c_func(CreateDIBSection,{hdc, bitmapinfo, DIB_RGB_COLORS, ppvBits, NULL, NULL})
 end function
 
+procedure update_window_size(sequence screen_size)
+    c_proc(GetClientRect, {hwnd,rect})
+    sequence clientsize = peek4u({rect+8,2})
+    c_proc(GetWindowRect,{hwnd,rect})
+    sequence winsize = peek4u({rect,4})
+    winsize[3..4] += - winsize[1..2] - clientsize + screen_size*scale
+    c_proc(SetWindowPos, hwnd & 0 & winsize & HWND_TOP)
+end procedure
+
 atom font
 font = 0
 integer default_char_height, default_char_width
@@ -719,9 +728,6 @@ constant
     -- font_name = ""
 
 procedure init_window(atom hwnd)
-    sequence winsize,clientsize,s
-    sequence blank
-    integer ncolors
     sequence loc_vc = vc
     
     -- Initialize font
@@ -742,10 +748,10 @@ procedure init_window(atom hwnd)
         -- end if
         poke4(logfont+lfWidth,char_width)
     end if
-    poke4(logfont+lfEscapement,{0,0}) -- escapement and orientation is ignored
+    poke4(logfont+lfEscapement,{0,0}) -- escapement and orientation are ignored
     poke4(logfont+lfWeight,FW_NORMAL)
     -- poke4(logfont+lfWeight,FW_SEMIBOLD)
-    poke(logfont+lfItalic,{FALSE,FALSE,FALSE}) -- not italic, not underline, not strikeout
+    poke(logfont+lfItalic,{FALSE,FALSE,FALSE}) -- non italic, not underlined, not strikeout
     poke(logfont+lfCharSet,OEM_CHARSET)
     poke(logfont+lfOutPrecision,OUT_DEFAULT_PRECIS)
     poke(logfont+lfClipPrecision,CLIP_DEFAULT_PRECIS)
@@ -755,13 +761,11 @@ procedure init_window(atom hwnd)
     poke(logfont+lfPitchAndFamily,or_bits(FIXED_PITCH,FF_DONTCARE))
     poke(logfont+lfFaceName,font_name&0)
     font = c_func(CreateFontIndirect,{logfont})
-    -- font = c_func(GetStockObject, {OEM_FIXED_FONT})
     hdcWindow = c_func(GetDC,{hwnd})
         c_proc(SelectObject,{hdcWindow,font})
         c_proc(GetTextMetrics,{hdcWindow,textmetric})
         char_height = peek4s(textmetric+tmHeight)
         char_width = peek4s(textmetric+tmAveCharWidth)
-        -- ? char_height & char_width
     c_proc(ReleaseDC,{hwnd,hdcWindow})
     
     -- Initialize window size
@@ -777,20 +781,16 @@ procedure init_window(atom hwnd)
     columns = loc_vc[VC_COLUMNS]
     lines = loc_vc[VC_LINES]
     
-    c_proc(GetClientRect, {hwnd,rect})
-    clientsize = peek4u({rect+8,2})
-    c_proc(GetWindowRect,{hwnd,rect})
-    winsize = peek4u({rect,4})
-    winsize[3..4] += - winsize[1..2] - clientsize + loc_vc[VC_XPIXELS..VC_YPIXELS]*scale
-    c_proc(SetWindowPos, hwnd & 0 & winsize & HWND_TOP)
+    update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS])
     screen_size_x = loc_vc[VC_XPIXELS]
     screen_size_y = loc_vc[VC_YPIXELS]
     bytes_per_line = and_bits(screen_size_x+3,-4)
     
     -- Initialize palette
-    ncolors = loc_vc[VC_NCOLORS]
+    integer ncolors = loc_vc[VC_NCOLORS]
     color_map = loc_vc[VC_COLOR_MAP]
     color_mask = ncolors-1
+    sequence s
     if length(brushes) = 0 then
         s = repeat(0,ncolors)
         brushes = s
@@ -812,7 +812,7 @@ procedure init_window(atom hwnd)
     
     -- Initialize pages
     pages = loc_vc[VC_PAGES]
-    blank = blank_line(BLACK,WHITE)
+    sequence blank = blank_line(BLACK,WHITE)
     text_pages = repeat(repeat(blank,lines),pages)
     active_page = 1
     display_page = 1
@@ -860,6 +860,7 @@ integer full_screen
 full_screen = 0
 
 sequence saved_window_pos, saved_window_style
+integer prev_scale
 procedure full_screen_on()
     if window_ready and not full_screen then
         saved_window_style = {
@@ -872,17 +873,25 @@ procedure full_screen_on()
         c_proc(GetWindowRect, {hwnd, rect})
         saved_window_pos = peek4s({rect,4})
         saved_window_pos[3..4] -= saved_window_pos[1..2]
-        c_proc(SetWindowPos, hwnd & 0 & {0,0} & get_resolution() & HWND_TOP ) 
+        sequence res = get_resolution()
+        c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
         full_screen = 1
+        prev_scale = scale
+        integer scale = min(floor(res/{screen_size_x,screen_size_y}))
+        if scale > 1 then
+            set_scale(scale)
+        end if
     end if
 end procedure
 
 procedure full_screen_off()
     if window_ready and full_screen then
+        -- restore window style and position
         c_proc(SetWindowLong, {hwnd, GWL_STYLE, saved_window_style[1]})
         c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, saved_window_style[2]})
         c_proc(SetWindowPos, hwnd & 0 & saved_window_pos & HWND_TOP )
         full_screen = 0
+        set_scale(prev_scale)
     end if
 end procedure
 
@@ -896,15 +905,23 @@ procedure set_full_screen(integer on_off)
 end procedure
 
 procedure toggle_full_screen()
-    if full_screen then
-        full_screen_off()
-    else
-        full_screen_on()
-    end if
+    set_full_screen(not full_screen)
 end procedure
 
 -- Scaling --
 global integer scale = 1 -- 1 disables
+
+procedure set_scale(integer x)
+    if x>0 then
+        scale = x
+        -- resize window if needed
+        if not full_screen then
+            update_window_size(vc[VC_XPIXELS..VC_YPIXELS])
+        end if
+        -- redraw it
+        repaint = 1
+    end if
+end procedure
 
 -- Text caret routines --
 
