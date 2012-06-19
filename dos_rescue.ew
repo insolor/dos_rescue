@@ -42,7 +42,15 @@ constant
     WS_THICKFRAME  = #00040000,
     WS_MINIMIZEBOX = #00020000,
     WS_MAXIMIZEBOX = #00010000,
+    WS_VISIBLE     = #10000000,
     WS_POPUP       = #80000000
+
+constant
+    WS_EX_TOPMOST  = #00000008
+
+constant
+    GWL_STYLE      = -16,
+    GWL_EXSTYLE    = -20
 
 constant
     IDI_APPLICATION = #7F00,
@@ -58,7 +66,9 @@ constant
 
 constant SRCCOPY = #CC0020
 
-constant HWND_TOP = 0
+constant
+    HWND_TOP = 0,
+    HWND_TOPMOST = -1
 
 -- WNDCLASSEX
 constant
@@ -201,6 +211,11 @@ constant
     FF_SCRIPT = 64,
     FF_SWISS = 32
 
+-- System metrics constants
+constant
+    SM_CXSCREEN = 0,
+    SM_CYSCREEN = 1
+
 constant
     paintstruct = allocate(sizeofPAINTSTRUCT),
     rect = allocate(sizeofRECT),
@@ -308,7 +323,10 @@ global constant
     RegisterHotKey = link_c_proc(user32,"RegisterHotKey",{C_UINT, C_INT, C_UINT, C_UINT}),
     SetWindowLong = link_c_proc(user32, "SetWindowLongA",{C_UINT,C_INT,C_LONG}),
     GetWindowLong = link_c_func(user32, "GetWindowLongA",{C_UINT,C_INT},C_LONG),
-
+    AdjustWindowRect = link_c_proc(user32, "AdjustWindowRect",{C_POINTER,C_LONG,C_LONG}),
+    GetSystemMetrics = link_c_func(user32, "GetSystemMetrics", {C_INT}, C_INT),
+    MoveWindow = link_c_proc(user32, "MoveWindow", {C_LONG, C_INT, C_INT, C_INT, C_INT, C_LONG}),
+    
     MoveToEx = link_c_proc(gdi32, "MoveToEx", {C_LONG, C_LONG, C_LONG, C_POINTER}),
     LineTo = link_c_proc(gdi32, "LineTo", {C_LONG, C_LONG, C_LONG}),
     Ellipse = link_c_proc(gdi32, "Ellipse", {C_LONG, C_LONG, C_LONG, C_LONG, C_LONG}),
@@ -832,23 +850,38 @@ procedure init_window(atom hwnd)
     c_proc(SetBkMode, {hdcActive, OPAQUE})
 end procedure
 
--- Full screen simulation routines - under construction
+function get_resolution()
+    return c_func(GetSystemMetrics,{SM_CXSCREEN}) & c_func(GetSystemMetrics,{SM_CYSCREEN})
+end function
+
+-- Full screen mode routines
 
 integer full_screen
 full_screen = 0
 
-sequence saved_window_pos
-atom saved_window_style
+sequence saved_window_pos, saved_window_style
 procedure full_screen_on()
     if window_ready and not full_screen then
+        saved_window_style = {
+            c_func(GetWindowLong, {hwnd, GWL_STYLE}),
+            c_func(GetWindowLong, {hwnd, GWL_EXSTYLE})
+        }
         
+        c_proc(SetWindowLong, {hwnd, GWL_STYLE, WS_POPUP+WS_VISIBLE}) -- make borderless window
+        c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, or_bits(saved_window_style[2], WS_EX_TOPMOST)})
+        c_proc(GetWindowRect, {hwnd, rect})
+        saved_window_pos = peek4s({rect,4})
+        saved_window_pos[3..4] -= saved_window_pos[1..2]
+        c_proc(SetWindowPos, hwnd & 0 & {0,0} & get_resolution() & HWND_TOP ) 
         full_screen = 1
     end if
 end procedure
 
 procedure full_screen_off()
     if window_ready and full_screen then
-        
+        c_proc(SetWindowLong, {hwnd, GWL_STYLE, saved_window_style[1]})
+        c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, saved_window_style[2]})
+        c_proc(SetWindowPos, hwnd & 0 & saved_window_pos & HWND_TOP )
         full_screen = 0
     end if
 end procedure
@@ -871,7 +904,7 @@ procedure toggle_full_screen()
 end procedure
 
 -- Scaling --
-global integer scale = 2 -- 1 disables scaling
+global integer scale = 1 -- 1 disables
 
 -- Text caret routines --
 
