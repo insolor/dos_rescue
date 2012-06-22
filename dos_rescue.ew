@@ -42,6 +42,7 @@ constant
     WS_THICKFRAME  = #00040000,
     WS_MINIMIZEBOX = #00020000,
     WS_MAXIMIZEBOX = #00010000,
+    WS_MAXIMIZE    = #01000000,
     WS_VISIBLE     = #10000000,
     WS_POPUP       = #80000000
 
@@ -109,6 +110,14 @@ constant
     WM_CHAR      = #0102,
     WM_HOTKEY    = #0312
 
+-- WM_SIZE message wParam values
+constant
+    SIZE_RESTORED       = 0,
+    SIZE_MINIMIZED      = 1,
+    SIZE_MAXIMIZED      = 2,
+    SIZE_MAXSHOW        = 3,
+    SIZE_MAXHIDE        = 4
+    
 constant
     MOD_ALT = 1,
     MOD_CONTROL = 2,
@@ -860,7 +869,7 @@ integer full_screen
 full_screen = 0
 
 sequence saved_window_pos, saved_window_style
-integer prev_scale
+
 procedure full_screen_on()
     if window_ready and not full_screen then
         saved_window_style = {
@@ -876,11 +885,6 @@ procedure full_screen_on()
         sequence res = get_resolution()
         c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
         full_screen = 1
-        prev_scale = scale
-        integer scale = min(floor(res/{screen_size_x,screen_size_y}))
-        if scale > 1 then
-            set_scale(scale)
-        end if
     end if
 end procedure
 
@@ -891,7 +895,6 @@ procedure full_screen_off()
         c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, saved_window_style[2]})
         c_proc(SetWindowPos, hwnd & 0 & saved_window_pos & HWND_TOP )
         full_screen = 0
-        set_scale(prev_scale)
     end if
 end procedure
 
@@ -915,10 +918,10 @@ procedure set_scale(integer x)
     if x>0 then
         scale = x
         -- resize window if needed
-        if not full_screen then
+        if not full_screen and not and_bits(c_func(GetWindowLong, {hwnd, GWL_STYLE}), WS_MAXIMIZE) then
             update_window_size(vc[VC_XPIXELS..VC_YPIXELS])
         end if
-        -- redraw it
+        -- repaint the window:
         repaint = 1
     end if
 end procedure
@@ -1002,7 +1005,15 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
             end if
         c_proc(EndPaint, {hwnd, paintstruct})
         return 0
-        
+    elsif iMsg = WM_SIZE and wParam != SIZE_MINIMIZED then
+        c_proc(GetClientRect,{hwnd,rect})
+        seqrect = peek4u({rect,4})
+        integer scale = min(floor(seqrect[3..4]/{screen_size_x,screen_size_y}))
+        if scale <= 0 then
+            scale = 1
+        end if
+        set_scale(scale)
+        return 0
     elsif iMsg = WM_KEYDOWN then
         if wParam = #10 then -- shift down
             shift = 1
