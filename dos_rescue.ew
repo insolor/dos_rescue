@@ -883,8 +883,8 @@ procedure full_screen_on()
         saved_window_pos = peek4s({rect,4})
         saved_window_pos[3..4] -= saved_window_pos[1..2]
         sequence res = get_resolution()
-        c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
         full_screen = 1
+        c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
     end if
 end procedure
 
@@ -893,8 +893,8 @@ procedure full_screen_off()
         -- restore window style and position
         c_proc(SetWindowLong, {hwnd, GWL_STYLE, saved_window_style[1]})
         c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, saved_window_style[2]})
-        c_proc(SetWindowPos, hwnd & 0 & saved_window_pos & HWND_TOP )
         full_screen = 0
+        c_proc(SetWindowPos, hwnd & 0 & saved_window_pos & HWND_TOP )
     end if
 end procedure
 
@@ -919,7 +919,7 @@ procedure set_scale(integer x)
         scale = x
         -- resize window if needed
         if not full_screen and not and_bits(c_func(GetWindowLong, {hwnd, GWL_STYLE}), WS_MAXIMIZE) then
-            update_window_size(vc[VC_XPIXELS..VC_YPIXELS])
+            update_window_size(screen_size_x & screen_size_y)
         end if
         -- repaint the window:
         repaint = 1
@@ -1161,7 +1161,8 @@ procedure WinMain(integer first_time)
                           WS_MINIMIZEBOX,
                           WS_CAPTION,
                           WS_SYSMENU,
-                          WS_MAXIMIZEBOX
+                          WS_MAXIMIZEBOX,
+                          WS_THICKFRAME
                           }), -- window style
                   CW_USEDEFAULT,         -- initial x position
                   CW_USEDEFAULT,         -- initial y position
