@@ -3,6 +3,9 @@
 --          ex key
 include dos_rescue.ew
 
+if graphics_mode(18) then
+end if
+
 integer code
 
 puts(1, "Press any key. I'll show you the key code. Press ESC to quit\n\n")

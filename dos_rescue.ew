@@ -685,7 +685,6 @@ key_map[#7B] = {344, 390} -- F12 {dos, win32}
 
 atom screen_size_x, screen_size_y, bytes_per_line
 atom char_height, char_width --, char_extra
-integer pixel_graphics
 
 integer window_ready
 window_ready = FALSE
@@ -776,15 +775,9 @@ procedure init_window(atom hwnd)
     c_proc(ReleaseDC,{hwnd,hdcWindow})
     
     -- Initialize window size
-    if not loc_vc[VC_XPIXELS] then -- 'text' mode
-        loc_vc[VC_XPIXELS] = loc_vc[VC_COLUMNS]*char_width
-        loc_vc[VC_YPIXELS] = loc_vc[VC_LINES]*char_height
-        pixel_graphics = FALSE
-    else -- 'graphics' mode
-        loc_vc[VC_COLUMNS] = floor(loc_vc[VC_XPIXELS]/char_width)
-        loc_vc[VC_LINES] = floor(loc_vc[VC_YPIXELS]/char_height)
-        pixel_graphics = TRUE
-    end if
+    loc_vc[VC_COLUMNS] = floor(loc_vc[VC_XPIXELS]/char_width)
+    loc_vc[VC_LINES] = floor(loc_vc[VC_YPIXELS]/char_height)
+    
     columns = loc_vc[VC_COLUMNS]
     lines = loc_vc[VC_LINES]
     
@@ -852,7 +845,6 @@ procedure init_window(atom hwnd)
     
     -- Select font to the active context
     c_proc(SelectObject, {hdcActive, font})
-    
     c_proc(SetBkMode, {hdcActive, OPAQUE})
 end procedure
 
@@ -1302,13 +1294,8 @@ global function graphics_mode(integer m)
             WinMain(TRUE) -- initial setup of hdc
         end if
         
-        if pixel_graphics then
-            cursor_shape = NO_CURSOR
-            destroy_caret(hwnd)
-        else
-            cursor_shape = THICK_UNDERLINE_CURSOR
-            reshape_cursor(cursor_shape)
-        end if
+        cursor_shape = NO_CURSOR
+        destroy_caret(hwnd)
         
         last_text_color = WHITE
         last_bk_color = BLACK
@@ -1318,12 +1305,6 @@ global function graphics_mode(integer m)
         return -1
     end if
     return 0
-end function
-
-global function text_rows(integer i)
-    vc[VC_LINES] = i
-    init_window(hwnd)
-    return lines
 end function
 
 -- experimental
@@ -2172,6 +2153,3 @@ global
 procedure tick_rate(atom rate)
     -- stub
 end procedure
-
-if graphics_mode(3) then
-end if
