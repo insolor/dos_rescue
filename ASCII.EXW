@@ -6,7 +6,7 @@ include dos_rescue.ew
 
 constant SCREEN = 1
 
-if text_rows(50) then
+if graphics_mode(260) then
 end if
 
 text_color(WHITE)
