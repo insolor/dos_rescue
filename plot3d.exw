@@ -24,7 +24,6 @@ include select.e
 include machine.e
 use_vesa(1) -- FOR ATI cards
 
-constant NFUNCS = 6
 constant c = sqrt(2.0) / 2
 constant SCREEN = 1
 
@@ -37,13 +36,9 @@ atom origin_x, origin_y
 origin_x = 400
 origin_y = 150
 
--- integer func_no
-integer grid_width--, fine
 integer x_res, y_res
 
 atom h_magnifier, v_magnifier
-
-sequence prev_coord
 
 function abs(atom x)
     if x < 0 then
@@ -165,7 +160,7 @@ function set_coord(atom x, atom y, atom z)
 	    v_magnifier * (origin_y - z + k)}
 end function
 
-procedure plot(atom x, atom y, integer func_no)
+function plot(atom x, atom y, integer func_no, sequence prev_coord = {})
 -- plot the point according to 3-D perspective
     atom z, col
     sequence coord
@@ -180,19 +175,19 @@ procedure plot(atom x, atom y, integer func_no)
     else
 	draw_line(col, {prev_coord, coord})
     end if
-    prev_coord = coord
-end procedure
+    return coord
+end function
 
-function plot_a_function(integer func_no, integer fine)
+function plot_a_function(integer func_no, integer fine=1, integer grid_width)
 -- generate 3d plotted graph
-
+	sequence prev_coord
     for x = x_min to x_max by grid_width * x_inc do
 	if get_key() != -1 then
 	    return 0
 	end if
 	prev_coord = {}
 	for y = y_min to y_max by fine * y_inc do
-	    plot(x, y, func_no)
+	    prev_coord = plot(x, y, func_no, prev_coord)
 	end for
     end for
 
@@ -202,10 +197,10 @@ function plot_a_function(integer func_no, integer fine)
 	end if
 	prev_coord = {}
 	for x = x_min to x_max by fine * x_inc do
-	    plot(x, y, func_no)
+	    prev_coord = plot(x, y, func_no, prev_coord)
 	end for
     end for
-    return 1
+    return {xc_max,yc_max,xc_min,yc_min}
 end function
 
 procedure box()
@@ -216,12 +211,12 @@ end procedure
 procedure plot3d()
 -- main program
     integer func_no = 1
-    while func_no <= NFUNCS do
+    while func_no <= length(funcs) do
 	set_range()
 	-- do a quick trial run to establish range of values
-	grid_width = 20
+	integer grid_width = 20
 	integer fine = 4
-	if plot_a_function(funcs[func_no], fine) then
+	if sequence(plot_a_function(funcs[func_no], fine, grid_width)) then
 	    clear_screen()
 	    box()
 	    -- make next one fit screen better
@@ -231,7 +226,7 @@ procedure plot3d()
 	    origin_y -= yc_min
 	    grid_width = 20
 	    fine = 1
-	    if plot_a_function(funcs[func_no], fine) then
+	    if sequence(plot_a_function(funcs[func_no], fine, grid_width)) then
 		position(2, 2)
 		printf(SCREEN, "x: %5.1f to %4.1f", {x_min, x_max})
 		position(3, 2)
