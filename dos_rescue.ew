@@ -286,21 +286,19 @@ end if
 
 -- link the C routines
 global constant
+    -- kernel32.dll
     Sleep = link_c_proc(kernel32, "Sleep", {C_INT}),
     Beep = link_c_proc(kernel32, "Beep", {C_LONG,C_LONG}),
     GlobalAddAtom =  link_c_func(kernel32,"GlobalAddAtomA",{C_POINTER},C_INT),
-
+    -- user32.dll
     LoadIcon = link_c_func(user32, "LoadIconA", {C_POINTER, C_INT}, C_INT),
     LoadCursor = link_c_func(user32, "LoadCursorA", {C_POINTER, C_INT}, C_INT),
     GetStockObject = link_c_func(gdi32, "GetStockObject", {C_INT}, C_INT),
     RegisterClassEx = link_c_func(user32, "RegisterClassExA", {C_POINTER}, C_INT),
-    CreateWindow = link_c_func(user32, "CreateWindowExA", 
-        {C_INT, C_INT,C_INT,C_INT,C_INT,C_INT,C_INT,C_INT,C_INT,C_INT,C_INT,C_INT},
-        C_INT),
+    CreateWindow = link_c_func(user32, "CreateWindowExA", repeat(C_INT,12), C_INT),
     ShowWindow = link_c_proc(user32, "ShowWindow", {C_INT, C_INT}),
     UpdateWindow = link_c_proc(user32, "UpdateWindow", {C_INT}),
-    PeekMessage = link_c_func(user32, "PeekMessageA",
-                  {C_INT, C_INT, C_INT, C_INT, C_INT}, C_INT),
+    PeekMessage = link_c_func(user32, "PeekMessageA", {C_INT, C_INT, C_INT, C_INT, C_INT}, C_INT),
     TranslateMessage = link_c_proc(user32, "TranslateMessage", {C_INT}),
     DispatchMessage = link_c_proc(user32, "DispatchMessageA", {C_INT}),
     DestroyWindow = link_c_proc(user32, "DestroyWindow", {C_INT}),
@@ -335,7 +333,7 @@ global constant
     AdjustWindowRect = link_c_proc(user32, "AdjustWindowRect",{C_POINTER,C_LONG,C_LONG}),
     GetSystemMetrics = link_c_func(user32, "GetSystemMetrics", {C_INT}, C_INT),
     MoveWindow = link_c_proc(user32, "MoveWindow", {C_LONG, C_INT, C_INT, C_INT, C_INT, C_LONG}),
-    
+    -- gdi32.dll
     MoveToEx = link_c_proc(gdi32, "MoveToEx", {C_LONG, C_LONG, C_LONG, C_POINTER}),
     LineTo = link_c_proc(gdi32, "LineTo", {C_LONG, C_LONG, C_LONG}),
     Ellipse = link_c_proc(gdi32, "Ellipse", {C_LONG, C_LONG, C_LONG, C_LONG, C_LONG}),
@@ -344,8 +342,7 @@ global constant
     SetTextColor = link_c_proc(gdi32, "SetTextColor", {C_LONG, C_LONG}),
     SetBkColor = link_c_proc(gdi32, "SetBkColor", {C_LONG, C_LONG}),
     SetBkMode = link_c_proc(gdi32, "SetBkMode", {C_LONG, C_LONG}),
-    CreatePen = link_c_func(gdi32, "CreatePen", {C_LONG, C_LONG, C_LONG}, 
-                                                 C_LONG),
+    CreatePen = link_c_func(gdi32, "CreatePen", {C_LONG, C_LONG, C_LONG}, C_LONG),
     Polygon = link_c_proc(gdi32, "Polygon", {C_LONG, C_LONG, C_LONG}),
     Polyline = link_c_proc(gdi32, "Polyline", {C_LONG, C_LONG, C_LONG}),
     CreateSolidBrush = link_c_func(gdi32, "CreateSolidBrush", {C_LONG}, C_LONG),
@@ -359,7 +356,7 @@ global constant
     StretchBlt = link_c_proc(gdi32, "StretchBlt",repeat(C_LONG,11)),
     DeleteDC = link_c_proc(gdi32, "DeleteDC", {C_LONG}),
     CreateFontIndirect = link_c_func(gdi32, "CreateFontIndirectA",{C_POINTER},C_LONG),
-    
+    -- winmm.dll
     PlaySound = link_c_proc(winmm,"PlaySound",{C_POINTER,C_UINT,C_UINT})
 
 -- Difinitions of the video modes --
