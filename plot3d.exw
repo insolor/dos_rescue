@@ -53,24 +53,24 @@ function abs(atom x)
     end if
 end function
 
-function the_function(atom x, atom y, integer func_no)
 -- compute a function z of two variables x and y
--- There are actually several different functions below,
--- selected by the func_no variable
-
-    if func_no = 1 then
+function func1(atom x, atom y)
 	return 100*x*x + 100*y*y - 50
+end function
 
-    elsif func_no = 2 then
+function func2(atom x, atom y)
 	return 200*x*x*x - 200*y*y*y
+end function
 
-    elsif func_no = 3 then
+function func3(atom x, atom y)
 	return 50 * cos(8*x*y)
+end function
 
-    elsif func_no = 4 then
+function func4(atom x, atom y)
 	return 50 * cos(8*(x+y))
+end function
 
-    elsif func_no = 5 then
+function func5(atom x, atom y)
 	atom z, w
 	z = 50 * cos(50 * sqrt(x*x+y*y))
 	if z >= -0.01 then
@@ -82,9 +82,12 @@ function the_function(atom x, atom y, integer func_no)
 	else
 	    return -0.01
 	end if
-    elsif func_no = 6 then
+end function
+
+function func6(atom x, atom y)
 	sequence pq, pr, ps -- points in the plane
 	atom dq, dr, ds     -- distance from p
+	atom z, w
 	pq = {.6, -.4}
 	pr = {-.6, 0}
 	ps = {.5, +.5}
@@ -103,8 +106,12 @@ function the_function(atom x, atom y, integer func_no)
 	    z += w
 	end if
 	return z
-    end if
 end function
+
+sequence funcs = {
+	routine_id("func1"), routine_id("func2"), routine_id("func3"),
+	routine_id("func4"), routine_id("func5"), routine_id("func6")
+}
 
 procedure set_range()
     -- magnification factors
@@ -163,7 +170,7 @@ procedure plot(atom x, atom y, integer func_no)
     atom z, col
     sequence coord
 
-    z = the_function(x, y, func_no)
+    z = call_func(func_no, {x, y})
     coord = set_coord(x, y, z)
     note_extreme(coord, z)
     -- select color by quadrant
@@ -214,7 +221,7 @@ procedure plot3d()
 	-- do a quick trial run to establish range of values
 	grid_width = 20
 	integer fine = 4
-	if plot_a_function(func_no, fine) then
+	if plot_a_function(funcs[func_no], fine) then
 	    clear_screen()
 	    box()
 	    -- make next one fit screen better
@@ -224,7 +231,7 @@ procedure plot3d()
 	    origin_y -= yc_min
 	    grid_width = 20
 	    fine = 1
-	    if plot_a_function(func_no, fine) then
+	    if plot_a_function(funcs[func_no], fine) then
 		position(2, 2)
 		printf(SCREEN, "x: %5.1f to %4.1f", {x_min, x_max})
 		position(3, 2)
