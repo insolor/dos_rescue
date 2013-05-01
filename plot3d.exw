@@ -37,8 +37,8 @@ atom origin_x, origin_y
 origin_x = 400
 origin_y = 150
 
-integer func_no
-integer grid_width, fine
+-- integer func_no
+integer grid_width--, fine
 integer x_res, y_res
 
 atom h_magnifier, v_magnifier
@@ -53,13 +53,10 @@ function abs(atom x)
     end if
 end function
 
-function the_function(atom x, atom y)
+function the_function(atom x, atom y, integer func_no)
 -- compute a function z of two variables x and y
 -- There are actually several different functions below,
 -- selected by the func_no variable
-    sequence pq, pr, ps -- points in the plane
-    atom dq, dr, ds     -- distance from p
-    atom z, w
 
     if func_no = 1 then
 	return 100*x*x + 100*y*y - 50
@@ -74,6 +71,7 @@ function the_function(atom x, atom y)
 	return 50 * cos(8*(x+y))
 
     elsif func_no = 5 then
+	atom z, w
 	z = 50 * cos(50 * sqrt(x*x+y*y))
 	if z >= -0.01 then
 	    if (x < 0 and y < 0) or (x > 0 and y > 0) then
@@ -85,6 +83,8 @@ function the_function(atom x, atom y)
 	    return -0.01
 	end if
     elsif func_no = 6 then
+	sequence pq, pr, ps -- points in the plane
+	atom dq, dr, ds     -- distance from p
 	pq = {.6, -.4}
 	pr = {-.6, 0}
 	ps = {.5, +.5}
@@ -158,12 +158,12 @@ function set_coord(atom x, atom y, atom z)
 	    v_magnifier * (origin_y - z + k)}
 end function
 
-procedure plot(atom x, atom y)
+procedure plot(atom x, atom y, integer func_no)
 -- plot the point according to 3-D perspective
     atom z, col
     sequence coord
 
-    z = the_function(x, y)
+    z = the_function(x, y, func_no)
     coord = set_coord(x, y, z)
     note_extreme(coord, z)
     -- select color by quadrant
@@ -176,7 +176,7 @@ procedure plot(atom x, atom y)
     prev_coord = coord
 end procedure
 
-function plot_a_function()
+function plot_a_function(integer func_no, integer fine)
 -- generate 3d plotted graph
 
     for x = x_min to x_max by grid_width * x_inc do
@@ -185,7 +185,7 @@ function plot_a_function()
 	end if
 	prev_coord = {}
 	for y = y_min to y_max by fine * y_inc do
-	    plot(x, y)
+	    plot(x, y, func_no)
 	end for
     end for
 
@@ -195,7 +195,7 @@ function plot_a_function()
 	end if
 	prev_coord = {}
 	for x = x_min to x_max by fine * x_inc do
-	    plot(x, y)
+	    plot(x, y, func_no)
 	end for
     end for
     return 1
@@ -208,13 +208,13 @@ end procedure
 
 procedure plot3d()
 -- main program
-    func_no = 1
+    integer func_no = 1
     while func_no <= NFUNCS do
 	set_range()
 	-- do a quick trial run to establish range of values
 	grid_width = 20
-	fine = 4
-	if plot_a_function() then
+	integer fine = 4
+	if plot_a_function(func_no, fine) then
 	    clear_screen()
 	    box()
 	    -- make next one fit screen better
@@ -224,7 +224,7 @@ procedure plot3d()
 	    origin_y -= yc_min
 	    grid_width = 20
 	    fine = 1
-	    if plot_a_function() then
+	    if plot_a_function(func_no, fine) then
 		position(2, 2)
 		printf(SCREEN, "x: %5.1f to %4.1f", {x_min, x_max})
 		position(3, 2)
