@@ -917,7 +917,7 @@ procedure set_scale(integer x)
         scale = x
         -- resize window if needed
         if not full_screen and not and_bits(c_func(GetWindowLong, {hwnd, GWL_STYLE}), WS_MAXIMIZE) then
-            update_window_size(screen_size_x & screen_size_y)
+            update_window_size(vc[VC_XPIXELS..VC_YPIXELS])
         end if
         -- repaint the window:
         repaint = 1
