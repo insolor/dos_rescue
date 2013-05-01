@@ -1188,18 +1188,18 @@ global procedure sanity()
 	end if
     else
 	-- some text mode tests
-	clear_screen()
-	position(1,1)
-	puts(1, "ABC")
-	position(2,1)
-	puts(1, "def")
+	-- clear_screen()
+	-- position(1,1)
+	-- puts(1, "ABC")
+	-- position(2,1)
+	-- puts(1, "def")
 	
-	s1 = save_text_image({1,1}, {2,3})
-	display_text_image({10,20}, s1)
-	s2 = save_text_image({10, 20}, {11, 22})
-	if not equal(s1, s2) then
-	    abort()
-	end if
+	-- s1 = save_text_image({1,1}, {2,3})
+	-- display_text_image({10,20}, s1)
+	-- s2 = save_text_image({10, 20}, {11, 22})
+	-- if not equal(s1, s2) then
+	    -- abort()
+	-- end if
 
 	-- graphics mode and other tests
 	vga = not graphics_mode(18) 
