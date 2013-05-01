@@ -337,6 +337,7 @@ global constant
     MoveToEx = link_c_proc(gdi32, "MoveToEx", {C_LONG, C_LONG, C_LONG, C_POINTER}),
     LineTo = link_c_proc(gdi32, "LineTo", {C_LONG, C_LONG, C_LONG}),
     Ellipse = link_c_proc(gdi32, "Ellipse", {C_LONG, C_LONG, C_LONG, C_LONG, C_LONG}),
+    Rectangle = link_c_proc(gdi32, "Rectangle", {C_LONG, C_LONG, C_LONG, C_LONG, C_LONG}),
     SelectObject = link_c_proc(gdi32, "SelectObject", {C_LONG, C_LONG}),
     GetCurrentObject = link_c_func(gdi32, "GetCurrentObject", {C_LONG, C_LONG},C_LONG),
     SetTextColor = link_c_proc(gdi32, "SetTextColor", {C_LONG, C_LONG}),
@@ -1681,6 +1682,25 @@ global procedure ellipse(integer color, integer fill, sequence coord1, sequence 
             c_proc(SelectObject, {hdcActive, null_brush})
         end if
         c_proc(Ellipse, hdcActive & coord1 & coord2)
+        
+        repaint = TRUE
+    end if
+end procedure
+
+global procedure rectangle(integer color, integer fill, sequence coord1, sequence coord2)
+    if window_ready then
+        coord2 += 1
+        if not color then
+            color = last_bk_color
+        end if
+        color = and_bits(color_mask,color)
+        c_proc(SelectObject, {hdcActive, pens[1+color]})
+        if fill then
+            c_proc(SelectObject, {hdcActive, brushes[1+color]})
+        else
+            c_proc(SelectObject, {hdcActive, null_brush})
+        end if
+        c_proc(Rectangle, hdcActive & coord1 & coord2)
         
         repaint = TRUE
     end if
