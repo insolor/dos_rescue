@@ -151,13 +151,13 @@ procedure note_extreme(sequence coord, atom z)
     end if
 end procedure
 
-function set_coord(atom x, atom y, atom z)
+function set_coord(sequence xyz)
 -- return the coordinates to plot, given the x, y and z values
     atom k
 
-    k = (x - x_min)/x_inc * c
-    return {h_magnifier * (origin_x + (y - y_min)/y_inc - k),
-	    v_magnifier * (origin_y - z + k)}
+    k = (xyz[1] - x_min)/x_inc * c
+    return {h_magnifier * (origin_x + (xyz[2] - y_min)/y_inc - k),
+	    v_magnifier * (origin_y - xyz[3] + k)}
 end function
 
 function plot(atom x, atom y, integer func_no, sequence prev_coord = {})
@@ -166,7 +166,7 @@ function plot(atom x, atom y, integer func_no, sequence prev_coord = {})
     sequence coord
 
     z = call_func(func_no, {x, y})
-    coord = set_coord(x, y, z)
+    coord = set_coord({x, y, z})
     note_extreme(coord, z)
     -- select color by quadrant
     col = (z >= 0) * 8 + (x >= 0) * 2 + (y >= 0) + 1
