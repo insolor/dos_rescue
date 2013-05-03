@@ -1756,7 +1756,7 @@ end procedure
 atom str,len
 str = NULL
 len = -1
-procedure putsxy(sequence pos, sequence s, integer fcolor, integer bcolor)
+public procedure putsxy(sequence pos, sequence s, integer fcolor, integer bcolor)
     poke4(rect, pos & {pos[1]+length(s)*char_width,pos[2]+char_height})
     
     c_proc(SetTextColor, {hdcActive, color_map[1+and_bits(color_mask,fcolor)]})
