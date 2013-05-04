@@ -1105,85 +1105,8 @@ hwnd = NULL
 object AppName
 AppName = 0
 
-procedure WinMain(integer first_time)
+procedure message_loop()
 -- main routine 
-    atom szAppName
-    atom wndclass
-    atom WndProcAddress
-    atom class
-    atom mq
-    
-    if first_time then
-        -- initial window set up
-        if atom(AppName) then
-            AppName = command_line()
-            AppName = AppName[2]
-        end if
-        szAppName = allocate_string(AppName)
-    
-        -- get address for callback
-        WndProcAddress = call_back(routine_id("WndProc")) 
-        
-        wndclass = allocate(SIZE_OF_WNDCLASSEX)
-        
-        poke4(wndclass, {
-            SIZE_OF_WNDCLASSEX, -- cbSize
-            or_all({CS_HREDRAW, CS_VREDRAW, CS_OWNDC}), -- style
-            WndProcAddress, -- lpfnWndProc
-            0, -- cbClsExtra
-            0, -- cbWndExtra
-            instance(), -- hInstance
-            get_icon(), -- hIcon
-            c_func(LoadCursor, {NULL, IDC_ARROW}), -- hCursor
-            c_func(GetStockObject, {BLACK_BRUSH}), -- hbrBackground
-            NULL, -- lpszMenuName
-            szAppName, -- szAppName
-            NULL -- hIconSm
-        })
-
-        class = c_func(RegisterClassEx, {wndclass})
-        if class = 0 then
-            crash("Couldn't register window class\n")
-        end if
-        
-        hwnd = c_func(CreateWindow, {
-                  0,                     -- extended style
-                  szAppName,             -- window class name
-                  allocate_string(AppName), -- window caption
-                  or_all({WS_OVERLAPPED,
-                          WS_MINIMIZEBOX,
-                          WS_CAPTION,
-                          WS_SYSMENU,
-                          WS_MAXIMIZEBOX,
-                          WS_THICKFRAME
-                          }), -- window style
-                  CW_USEDEFAULT,         -- initial x position
-                  CW_USEDEFAULT,         -- initial y position
-                  CW_USEDEFAULT,         -- initial x size
-                  CW_USEDEFAULT,         -- initial y size
-                  NULL,                  -- parent window handle
-                  NULL,                  -- window menu handle
-                  instance() ,                    -- hInstance // program instance handle
-                  NULL})                 -- creation parameters
-    
-        if hwnd = 0 then
-            crash("Couldn't CreateWindow\n")
-        end if
-    
-        c_proc(ShowWindow, {hwnd, SW_SHOWNORMAL})
-        c_proc(UpdateWindow, {hwnd})
-        
-        -- create task to check message queue
-        mq = task_create(routine_id("WinMain"), {FALSE})
-        -- check the queue every .2 to .3 seconds
-        -- (main program must do a task_yield periodically
-        -- or the window will be frozen)
-        -- task_schedule(mq, {.08, .12}) -- make keyboard very responsive
-        task_schedule(mq, {.01, .05})
-        -- assume hdc has now been set
-        -- return
-    end if  
-
     -- initial task - message loop using PeekMessage
     while TRUE do
         if c_func(PeekMessage, {msg, NULL, 0, 0, PM_REMOVE}) then
@@ -1210,6 +1133,82 @@ procedure WinMain(integer first_time)
     end while
     
     char_buff &= 27 -- Esc character to terminate the other tasks
+end procedure
+
+procedure create_window()
+    atom szAppName
+    atom wndclass
+    atom WndProcAddress
+    atom mq
+    atom class
+    
+    -- initial window set up
+    if atom(AppName) then
+        AppName = command_line()
+        AppName = AppName[2]
+    end if
+    szAppName = allocate_string(AppName)
+
+    -- get address for callback
+    WndProcAddress = call_back(routine_id("WndProc")) 
+    
+    wndclass = allocate(SIZE_OF_WNDCLASSEX)
+    
+    poke4(wndclass, {
+        SIZE_OF_WNDCLASSEX, -- cbSize
+        or_all({CS_HREDRAW, CS_VREDRAW, CS_OWNDC}), -- style
+        WndProcAddress, -- lpfnWndProc
+        0, -- cbClsExtra
+        0, -- cbWndExtra
+        instance(), -- hInstance
+        get_icon(), -- hIcon
+        c_func(LoadCursor, {NULL, IDC_ARROW}), -- hCursor
+        c_func(GetStockObject, {BLACK_BRUSH}), -- hbrBackground
+        NULL, -- lpszMenuName
+        szAppName, -- szAppName
+        NULL -- hIconSm
+    })
+
+    class = c_func(RegisterClassEx, {wndclass})
+    if class = 0 then
+        crash("Couldn't register window class\n")
+    end if
+    
+    hwnd = c_func(CreateWindow, {
+              0,                     -- extended style
+              szAppName,             -- window class name
+              allocate_string(AppName), -- window caption
+              or_all({WS_OVERLAPPED,
+                      WS_MINIMIZEBOX,
+                      WS_CAPTION,
+                      WS_SYSMENU,
+                      WS_MAXIMIZEBOX,
+                      WS_THICKFRAME
+                      }), -- window style
+              CW_USEDEFAULT,         -- initial x position
+              CW_USEDEFAULT,         -- initial y position
+              CW_USEDEFAULT,         -- initial x size
+              CW_USEDEFAULT,         -- initial y size
+              NULL,                  -- parent window handle
+              NULL,                  -- window menu handle
+              instance() ,                    -- hInstance // program instance handle
+              NULL})                 -- creation parameters
+    
+    if hwnd = 0 then
+        crash("Couldn't CreateWindow\n")
+    end if
+    
+    c_proc(ShowWindow, {hwnd, SW_SHOWNORMAL})
+    c_proc(UpdateWindow, {hwnd})
+    
+    -- create task to check message queue
+    mq = task_create(routine_id("message_loop"), {})
+    -- check the queue every .2 to .3 seconds
+    -- (main program must do a task_yield periodically
+    -- or the window will be frozen)
+    -- task_schedule(mq, {.08, .12}) -- make keyboard very responsive
+    task_schedule(mq, {.01, .05})
+    -- assume hdc has now been set
 end procedure
 
 global procedure set_title(sequence s)
@@ -1294,7 +1293,7 @@ global function graphics_mode(integer m)
         if hwnd then
             init_window(hwnd)
         else
-            WinMain(TRUE) -- initial setup of hdc
+            create_window() -- initial setup of hdc
         end if
         
         cursor_shape = NO_CURSOR
