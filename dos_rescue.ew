@@ -960,7 +960,6 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
     sequence seqrect
     
     if iMsg = WM_CREATE then
-        
         char_buff = {}
         key_buff = {}
         
@@ -1142,7 +1141,7 @@ function create_window()
     atom mq
     atom class
     atom hwnd
-    
+
     -- initial window set up
     if atom(AppName) then
         AppName = command_line()
@@ -1198,9 +1197,6 @@ function create_window()
     if hwnd = 0 then
         crash("Couldn't CreateWindow\n")
     end if
-    
-    c_proc(ShowWindow, {hwnd, SW_SHOWNORMAL})
-    c_proc(UpdateWindow, {hwnd})
     
     -- create task to check message queue
     mq = task_create(routine_id("message_loop"), {hwnd})
@@ -1295,11 +1291,10 @@ global function graphics_mode(integer m)
     elsif sequence(video_modes[m+1]) then
         video_mode = m
         vc = video_modes[m+1]
-        if hwnd then
-            init_window(hwnd)
-        else
+        if not hwnd then
             hwnd = create_window()
         end if
+        init_window(hwnd)
         
         cursor_shape = NO_CURSOR
         destroy_caret(hwnd)
