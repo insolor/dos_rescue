@@ -744,10 +744,10 @@ procedure init_window(atom hwnd)
     if font != 0 then
         c_proc(DeleteObject,{font})
     end if
-    if loc_vc[VC_XPIXELS] = 0 then
-        poke4(logfont+lfHeight,default_char_height)
-        poke4(logfont+lfWidth,default_char_width)
-    else
+    -- if loc_vc[VC_XPIXELS] = 0 then
+        -- poke4(logfont+lfHeight,default_char_height)
+        -- poke4(logfont+lfWidth,default_char_width)
+    -- else
         char_width = floor(loc_vc[VC_XPIXELS]/loc_vc[VC_COLUMNS])
         char_height = loc_vc[VC_YPIXELS]/loc_vc[VC_LINES]
         poke4(logfont+lfHeight,char_height)
@@ -757,7 +757,7 @@ procedure init_window(atom hwnd)
             -- poke4(logfont+lfWidth,char_width+1)
         -- end if
         poke4(logfont+lfWidth,char_width)
-    end if
+    -- end if
     poke4(logfont+lfEscapement,{0,0}) -- escapement and orientation are ignored
     poke4(logfont+lfWeight,FW_NORMAL)
     -- poke4(logfont+lfWeight,FW_SEMIBOLD)
