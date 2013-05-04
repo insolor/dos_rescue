@@ -1,0 +1,159 @@
+--****
+-- === queens.ex
+--
+-- solves the N queens problem - how to place N queens on an NxN
+-- chess board so they do not attack each other
+--
+
+include dos_rescue.ew
+
+constant N = 8
+constant ROW = 1, COLUMN = 2
+constant TRUE = 1, FALSE = 0
+
+constant shape = {
+    -- crown
+    {4,20}, {2,8},
+    {9,20}, {10,5},
+    {15,20}, {18,4},
+    {21,20}, {26,5},
+    {27,20}, {34,8},
+    -- basement
+    {32,20}, {29,24}, {29,27}, {30,30},
+    {30,33}, {6,33}, {6,30}, {7,27}, {7,24}
+}
+
+procedure queen(sequence origin, atom scale,
+            integer outline_color, integer fill_color)
+    polygon(fill_color, 1, shape*scale +
+        repeat(origin,length(shape)))
+    polygon(outline_color, 0, shape*scale +
+        repeat(origin,length(shape)))
+    draw_line(outline_color, {{4,20},{32,20}}*scale +
+        repeat(origin,2))
+    draw_line(outline_color, {{7,24},{29,24}}*scale +
+        repeat(origin,2))
+    draw_line(outline_color, {{7,27},{29,27}}*scale +
+        repeat(origin,2))
+    ellipse(fill_color, 1, {0,4}*scale+origin, {4,8}*scale+origin)
+    ellipse(fill_color, 1, {8,1}*scale+origin, {12,5}*scale+origin)
+    ellipse(fill_color, 1, {16,0}*scale+origin, {20,4}*scale+origin)
+    ellipse(fill_color, 1, {24,1}*scale+origin, {28,5}*scale+origin)
+    ellipse(fill_color, 1, {32,4}*scale+origin, {36,8}*scale+origin)
+    ellipse(outline_color, 0, {0,4}*scale+origin, {4,8}*scale+origin)
+    ellipse(outline_color, 0, {8,1}*scale+origin, {12,5}*scale+origin)
+    ellipse(outline_color, 0, {16,0}*scale+origin, {20,4}*scale+origin)
+    ellipse(outline_color, 0, {24,1}*scale+origin, {28,5}*scale+origin)
+    ellipse(outline_color, 0, {32,4}*scale+origin, {36,8}*scale+origin)
+end procedure
+
+procedure draw_square(integer color, sequence origin, integer side)
+    polygon(color,1,{{0,0},{1,0},{1,1},{0,1}}*side+repeat(origin,4))
+end procedure
+
+procedure board(sequence origin, integer square_size,
+        integer light_color, integer dark_color)
+    for i = 0 to N-1 do
+        for j = 0 to N-1 do
+            integer color
+            if remainder(i+j,2)=0 then
+                color = light_color
+            else
+                color = dark_color
+            end if
+            draw_square(color, origin+{i,j}*square_size, square_size)
+        end for
+    end for
+end procedure
+
+graphics_mode(18)
+
+type square(sequence x)
+-- a square on the board
+    return length(x) = 2
+end type
+
+type row(integer x)
+-- a row on the board
+    return x >= 1 and x <= N
+end type
+
+function threat(square q1, square q2)
+-- do two queens threaten each other?
+    if q1[COLUMN] = q2[COLUMN] then
+        return TRUE
+    elsif q1[ROW] - q1[COLUMN] = q2[ROW] - q2[COLUMN] then
+        return TRUE
+    elsif q1[ROW] + q1[COLUMN] = q2[ROW] + q2[COLUMN] then
+        return TRUE
+    elsif q1[ROW] = q2[ROW] then
+        return TRUE
+    else
+        return FALSE
+    end if
+end function
+
+function conflict(square q, sequence queens)
+-- Would square p cause a conflict with other queens on board so far?
+    for i = 1 to length(queens) do
+        if threat(q, queens[i]) then
+            return TRUE
+        end if
+    end for
+    return FALSE
+end function
+
+integer soln
+soln = 0 -- solution number
+
+function swap(sequence xy)
+    return xy[2] & xy[1]
+end function
+
+procedure print_board(sequence queens)
+-- print a solution, showing the Queens on the board
+    integer k
+    clear_screen()
+    printf(1, "Solution #%d\n\n  ", soln)
+    for i = 0 to N-1 do
+        putsxy({i*40+35,20}, {'a'+i}, BRIGHT_WHITE,BLACK)
+        putsxy({5,i*40+55}, {'1'+i}, BRIGHT_WHITE,BLACK)
+    end for
+    board({20,40}, 40, WHITE, GRAY)
+    for i = 1 to length(queens) do
+        queen({22,42}+swap(queens[i]-1)*40,1,BLACK,BRIGHT_WHITE)
+    end for
+    putsxy({0,50+40*N}, "Press Enter. (q to quit) ", WHITE, BLACK)
+    while TRUE do
+        k = get_key()
+        if k = 'q' then
+            abort(0)
+        elsif k != -1 then
+            exit
+        end if
+    end while
+end procedure
+
+procedure place_queen(sequence queens)
+-- place queens on a NxN chess board
+-- (recursive procedure)
+    row r -- only need to consider one row for each queen
+
+    if length(queens) = N then
+        soln += 1
+        print_board(queens)
+        return
+    end if
+    r = length(queens)+1
+    for c = 1 to N do
+        if not conflict({r,c}, queens) then
+            place_queen(append(queens, {r,c}))
+        end if
+    end for
+end procedure
+
+place_queen({})
+
+wait_key()
+
+graphics_mode(-1)
