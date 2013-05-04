@@ -1777,7 +1777,7 @@ public procedure putsxy(sequence pos, sequence s, integer fcolor, integer bcolor
     c_proc(SetTextColor, {hdcActive, color_map[1+and_bits(color_mask,fcolor)]})
     c_proc(SetBkColor, {hdcActive, color_map[1+and_bits(color_mask,bcolor)]})
     
-    if len < length(s) then
+    if len < length(s)+1 then -- +1 for trailing '\0'
         if str then
             free(str)
         end if
