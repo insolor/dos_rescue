@@ -520,6 +520,9 @@ function reverse_color(object colors)
     return colors
 end function
 
+integer border
+border = 10
+
 integer repaint
 repaint = FALSE
 integer color_mask
@@ -788,7 +791,7 @@ procedure init_window(atom hwnd)
     columns = loc_vc[VC_COLUMNS]
     lines = loc_vc[VC_LINES]
     
-    update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS])
+    update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS]+2*border)
     screen_size_x = loc_vc[VC_XPIXELS]
     screen_size_y = loc_vc[VC_YPIXELS]
     bytes_per_line = and_bits(screen_size_x+3,-4)
@@ -915,7 +918,7 @@ procedure set_scale(integer x)
         scale = x
         -- resize window if needed
         if not full_screen and not and_bits(c_func(GetWindowLong, {hwnd, GWL_STYLE}), WS_MAXIMIZE) then
-            update_window_size(vc[VC_XPIXELS..VC_YPIXELS])
+            update_window_size(vc[VC_XPIXELS..VC_YPIXELS]+2*border)
         end if
         -- repaint the window:
         repaint = 1
@@ -987,9 +990,9 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
             seqrect = peek4u({paintstruct+rcPaint, 4})
             if scale < 2 then
                 if active_page = display_page then
-                    c_proc(BitBlt, hdcWindow & seqrect & hdcActive & seqrect[1..2] & SRCCOPY)
+                    c_proc(BitBlt, hdcWindow & seqrect & hdcActive & seqrect[1..2]-border & SRCCOPY)
                 else
-                    c_proc(BitBlt, hdcWindow & seqrect & hdcDisplay & seqrect[1..2] & SRCCOPY)
+                    c_proc(BitBlt, hdcWindow & seqrect & hdcDisplay & seqrect[1..2]-border & SRCCOPY)
                 end if
             else
                 if active_page = display_page then
@@ -1303,7 +1306,7 @@ global function graphics_mode(integer m)
         video_mode = m
         vc = video_modes[m+1]
         if not hwnd then
-            hwnd = create_window(vc[VC_XPIXELS..VC_YPIXELS])
+            hwnd = create_window(vc[VC_XPIXELS..VC_YPIXELS]+border*2)
         else
             init_window(hwnd)
         end if
