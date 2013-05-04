@@ -1082,7 +1082,7 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         {hwnd, iMsg, wParam, lParam, custom_handlers[1..$-1]})
 end function
 
-constant msg = allocate(SIZE_OF_MESSAGE)
+
 
 constant icon_names = {"exw","euiw","eui"}
 function get_icon()
@@ -1100,12 +1100,9 @@ function get_icon()
     return c_func(LoadIcon, {0, IDI_APPLICATION})
 end function
 
-atom hwnd
-hwnd = NULL
-object AppName
-AppName = 0
+constant msg = allocate(SIZE_OF_MESSAGE)
 
-procedure message_loop()
+procedure message_loop(atom hwnd)
 -- main routine 
     -- initial task - message loop using PeekMessage
     while TRUE do
@@ -1135,12 +1132,16 @@ procedure message_loop()
     char_buff &= 27 -- Esc character to terminate the other tasks
 end procedure
 
-procedure create_window()
+object AppName
+AppName = 0
+
+function create_window()
     atom szAppName
     atom wndclass
     atom WndProcAddress
     atom mq
     atom class
+    atom hwnd
     
     -- initial window set up
     if atom(AppName) then
@@ -1202,14 +1203,18 @@ procedure create_window()
     c_proc(UpdateWindow, {hwnd})
     
     -- create task to check message queue
-    mq = task_create(routine_id("message_loop"), {})
+    mq = task_create(routine_id("message_loop"), {hwnd})
     -- check the queue every .2 to .3 seconds
     -- (main program must do a task_yield periodically
     -- or the window will be frozen)
     -- task_schedule(mq, {.08, .12}) -- make keyboard very responsive
     task_schedule(mq, {.01, .05})
     -- assume hdc has now been set
-end procedure
+    return hwnd
+end function
+
+atom hwnd
+hwnd = NULL
 
 global procedure set_title(sequence s)
     atom szTitle
@@ -1293,7 +1298,7 @@ global function graphics_mode(integer m)
         if hwnd then
             init_window(hwnd)
         else
-            create_window() -- initial setup of hdc
+            hwnd = create_window()
         end if
         
         cursor_shape = NO_CURSOR
