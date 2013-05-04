@@ -1770,7 +1770,7 @@ end procedure
 
 atom str,len
 str = NULL
-len = -1
+len = 0
 public procedure putsxy(sequence pos, sequence s, integer fcolor, integer bcolor)
     poke4(rect, pos & {pos[1]+length(s)*char_width,pos[2]+char_height})
     
