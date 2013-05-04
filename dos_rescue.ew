@@ -501,6 +501,10 @@ function pack_color(sequence s)
     return s[1] + #100*s[2] + #10000*s[3]
 end function
 
+function unpack_color(atom color)
+    return floor(and_bits(color,{#FF,#FF00,#FF0000})/{#1,#100,#10000})
+end function
+
 -- Reverses color byte order
 function reverse_color(object colors)
     if atom(colors) then
@@ -541,7 +545,8 @@ global function palette(integer color_index, sequence new_color_triple)
     if color_index < 0 or color_index >= length(color_map) then
         return -1
     else
-        old_color = floor(and_bits(color_map[color_index+1],{#FF,#FF00,#FF0000})/{#4,#400,#40000})
+        -- old_color = floor(and_bits(color_map[color_index+1],{#FF,#FF00,#FF0000})/{#4,#400,#40000})
+        old_color = floor(unpack_color(color_map[color_index+1])/4)
         new_color_triple = floor(new_color_triple)
         color_map[color_index+1] = pack_color(floor(new_color_triple*255/63))
         c_proc(DeleteObject,{brushes[color_index+1]})
@@ -579,7 +584,8 @@ global function get_all_palette()
     sequence s
     s = color_map
     for i = 1 to length(s) do
-        s[i] = floor(and_bits(s[i],{#FF,#FF00,#FF0000})/{#4,#400,#40000} )
+        -- s[i] = floor(and_bits(s[i],{#FF,#FF00,#FF0000})/{#4,#400,#40000} )
+        s[i] = floor(unpack_color(s[i])/4)
     end for
     return s
 end function
