@@ -520,6 +520,9 @@ function reverse_color(object colors)
     return colors
 end function
 
+integer border
+border = 2
+
 integer repaint
 repaint = FALSE
 integer color_mask
