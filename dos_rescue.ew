@@ -960,7 +960,6 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
     sequence seqrect
     
     if iMsg = WM_CREATE then
-        
         char_buff = {}
         key_buff = {}
         
@@ -1105,7 +1104,7 @@ hwnd = NULL
 object AppName
 AppName = 0
 
-procedure message_loop()
+procedure message_loop(atom hwnd)
 -- main routine 
     -- initial task - message loop using PeekMessage
     while TRUE do
@@ -1135,13 +1134,14 @@ procedure message_loop()
     char_buff &= 27 -- Esc character to terminate the other tasks
 end procedure
 
-procedure create_window()
+function create_window()
     atom szAppName
     atom wndclass
     atom WndProcAddress
     atom mq
     atom class
-    
+    atom hwnd
+
     -- initial window set up
     if atom(AppName) then
         AppName = command_line()
@@ -1198,18 +1198,19 @@ procedure create_window()
         crash("Couldn't CreateWindow\n")
     end if
     
-    c_proc(ShowWindow, {hwnd, SW_SHOWNORMAL})
-    c_proc(UpdateWindow, {hwnd})
-    
     -- create task to check message queue
-    mq = task_create(routine_id("message_loop"), {})
+    mq = task_create(routine_id("message_loop"), {hwnd})
     -- check the queue every .2 to .3 seconds
     -- (main program must do a task_yield periodically
     -- or the window will be frozen)
     -- task_schedule(mq, {.08, .12}) -- make keyboard very responsive
     task_schedule(mq, {.01, .05})
     -- assume hdc has now been set
-end procedure
+    
+    c_proc(ShowWindow, {hwnd, SW_SHOWNORMAL})
+    c_proc(UpdateWindow, {hwnd})
+    return hwnd
+end function
 
 global procedure set_title(sequence s)
     atom szTitle
@@ -1290,11 +1291,10 @@ global function graphics_mode(integer m)
     elsif sequence(video_modes[m+1]) then
         video_mode = m
         vc = video_modes[m+1]
-        if hwnd then
-            init_window(hwnd)
-        else
-            create_window() -- initial setup of hdc
+        if not hwnd then
+            hwnd = create_window()
         end if
+        init_window(hwnd)
         
         cursor_shape = NO_CURSOR
         destroy_caret(hwnd)
