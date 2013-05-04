@@ -467,7 +467,7 @@ sequence vc
 integer lines, columns
 
 global function video_config()
-    if not window_ready then
+    if not hwnd then
         return { 1, 1, 25,  40, 0, 0, 32, 8 }
     else
         return vc[1..VC_PAGES]
@@ -598,14 +598,14 @@ bitmap_pages = {}
 memory_pages = {}
 atom hOldActiveBitmap, hOldDisplayBitmap
 
-function blank_line(integer bcolor, integer tcolor)
-    sequence row
-    row = {}
-    for i = 1 to columns do
-        row &= {' ', bcolor*#10+tcolor}
-    end for
-    return row
-end function
+-- function blank_line(integer bcolor, integer tcolor)
+    -- sequence row
+    -- row = {}
+    -- for i = 1 to columns do
+        -- row &= {' ', bcolor*#10+tcolor}
+    -- end for
+    -- return row
+-- end function
 
 global function get_active_page()
     return active_page-1
@@ -690,8 +690,8 @@ key_map[#7B] = {344, 390} -- F12 {dos, win32}
 atom screen_size_x, screen_size_y, bytes_per_line
 atom char_height, char_width --, char_extra
 
-integer window_ready
-window_ready = FALSE
+-- integer window_ready
+-- window_ready = FALSE
 
 sequence char_buff
 global sequence key_buff
@@ -717,6 +717,9 @@ function create_dib_section(atom hdc, integer width, integer height, sequence co
 end function
 
 procedure update_window_size(sequence screen_size)
+    -- poke4(rect, {0,0}&screen_size)
+    -- c_proc(AdjustWindowRect, {rect,winstyle,0})
+    -- winsize = peek4u({rect,4})
     c_proc(GetClientRect, {hwnd,rect})
     sequence clientsize = peek4u({rect+8,2})
     c_proc(GetWindowRect,{hwnd,rect})
@@ -816,7 +819,7 @@ procedure init_window(atom hwnd)
     
     -- Initialize pages
     pages = loc_vc[VC_PAGES]
-    sequence blank = blank_line(BLACK,WHITE)
+    -- sequence blank = blank_line(BLACK,WHITE)
     active_page = 1
     display_page = 1
     
@@ -864,7 +867,7 @@ full_screen = 0
 sequence saved_window_pos, saved_window_style
 
 procedure full_screen_on()
-    if window_ready and not full_screen then
+    if hwnd and not full_screen then
         saved_window_style = {
             c_func(GetWindowLong, {hwnd, GWL_STYLE}),
             c_func(GetWindowLong, {hwnd, GWL_EXSTYLE})
@@ -882,7 +885,7 @@ procedure full_screen_on()
 end procedure
 
 procedure full_screen_off()
-    if window_ready and full_screen then
+    if hwnd and full_screen then
         -- restore window style and position
         c_proc(SetWindowLong, {hwnd, GWL_STYLE, saved_window_style[1]})
         c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, saved_window_style[2]})
@@ -1022,10 +1025,10 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         end if
         
     elsif iMsg = WM_KEYUP then
-        if wParam = 16 then -- shift up
+        if wParam = #10 then -- shift up
             shift = 0
             return 0
-        elsif wParam = 17 then -- ctrl up
+        elsif wParam = #11 then -- ctrl up
             ctrl = 0
             return 0
         end if
@@ -1042,12 +1045,12 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         toggle_full_screen()
     
     elsif iMsg = WM_SETFOCUS then
-        if window_ready and cursor_shape != NO_CURSOR then
+        if hwnd and cursor_shape != NO_CURSOR then
             create_caret(hwnd)
             return 0
         end if
     elsif iMsg = WM_KILLFOCUS then
-        if window_ready and cursor_shape != NO_CURSOR then
+        if hwnd and cursor_shape != NO_CURSOR then
             destroy_caret(hwnd)
             return 0
         end if
@@ -1069,7 +1072,7 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         end for
         
         c_proc(PostQuitMessage, {0})
-        window_ready = FALSE
+        hwnd = FALSE
         if abort_program then
             abort(0)
         else
@@ -1245,7 +1248,7 @@ override procedure clear_screen()
     sequence blank
     if hwnd then
         clear_region(0, 0, screen_size_x, screen_size_y)
-        blank = blank_line(last_bk_color,last_text_color)
+        -- blank = blank_line(last_bk_color,last_text_color)
         
         cursor_column = 1
         cursor_line = 1
@@ -1270,12 +1273,12 @@ global procedure bk_color(integer color)
 -- was calling routine in graphics.e to set background color
 -- text or graphics modes - not really needed
     sequence vc
-    if window_ready then
+    if hwnd then
         last_bk_color = color
         vc = video_config()
-        if vc[VC_XPIXELS] then -- graphics_mode
+        -- if vc[VC_XPIXELS] then -- graphics_mode
             clear_screen()
-        end if
+        -- end if
     end if
 end procedure
 
@@ -1301,8 +1304,9 @@ global function graphics_mode(integer m)
         vc = video_modes[m+1]
         if not hwnd then
             hwnd = create_window(vc[VC_XPIXELS..VC_YPIXELS])
+        else
+            init_window(hwnd)
         end if
-        init_window(hwnd)
         
         cursor_shape = NO_CURSOR
         destroy_caret(hwnd)
@@ -1310,7 +1314,6 @@ global function graphics_mode(integer m)
         last_text_color = WHITE
         last_bk_color = BLACK
         clear_screen()
-        window_ready = TRUE
     else
         return -1
     end if
@@ -1337,7 +1340,7 @@ end function
 
 global procedure pixel(object c, sequence xy)
     atom off
-    if window_ready and atom(xy[1]) and atom(xy[2]) and xy[1] >= 0 and xy[1] < screen_size_x and
+    if hwnd and atom(xy[1]) and atom(xy[2]) and xy[1] >= 0 and xy[1] < screen_size_x and
             xy[2] >= 0 and xy[2] < screen_size_y then
         c = floor(c)
         xy = floor(xy)
@@ -1353,7 +1356,7 @@ end procedure
 
 global function get_pixel(sequence xyn)
     atom off
-    if window_ready and xyn[1] >= 0 and xyn[1] < screen_size_x and
+    if hwnd and xyn[1] >= 0 and xyn[1] < screen_size_x and
             xyn[2] >= 0 and xyn[2] < screen_size_y then
         xyn = floor(xyn)
         off = memory_pages[active_page] + xyn[1] + xyn[2]*bytes_per_line
@@ -1373,7 +1376,7 @@ end function
 
 global procedure display_image(sequence xy, sequence image)
     atom off
-    if window_ready and xy[1] >= 0 and xy[1] < screen_size_x and
+    if hwnd and xy[1] >= 0 and xy[1] < screen_size_x and
             xy[2] >= 0 and xy[2] < screen_size_y then
         image = and_bits(color_mask,floor(image))
         xy = floor(xy)
@@ -1396,7 +1399,7 @@ global function save_image(sequence xy1, sequence xy2)
     atom off, width
     sequence image
     image = {}
-    if window_ready and xy1[1] >= 0 and xy1[1] < screen_size_x and
+    if hwnd and xy1[1] >= 0 and xy1[1] < screen_size_x and
             xy1[2] >= 0 and xy1[2] < screen_size_y and
             xy2[1] >= 0 and xy2[1] < screen_size_x and
             xy2[2] >= 0 and xy2[2] < screen_size_y then
@@ -1658,7 +1661,7 @@ end function
 -- High-level graphics routines --
 
 global procedure ellipse(integer color, integer fill, sequence coord1, sequence coord2)
-    if window_ready then
+    if hwnd then
         coord2 += 1
         if not color then
             color = last_bk_color
@@ -1677,7 +1680,7 @@ global procedure ellipse(integer color, integer fill, sequence coord1, sequence 
 end procedure
 
 global procedure rectangle(integer color, integer fill, sequence coord1, sequence coord2)
-    if window_ready then
+    if hwnd then
         coord2 += 1
         if not color then
             color = last_bk_color
@@ -1699,7 +1702,7 @@ atom points, npoints
 points = NULL
 npoints = 0
 global procedure draw_line(integer color, sequence xyarray)
-    if window_ready and length(xyarray) then
+    if hwnd and length(xyarray) then
         if not color then
             color = last_bk_color
         end if
@@ -1732,7 +1735,7 @@ global procedure draw_line(integer color, sequence xyarray)
 end procedure
 
 global procedure polygon(integer color, integer fill, sequence xyarray)
-    if window_ready then
+    if hwnd then
         if not color then
             color = last_bk_color
         end if
@@ -1802,7 +1805,7 @@ global procedure scroll(integer lines, integer top, integer bottom)
     sequence text, blank
     -- sequence rows
     if lines != 0 then
-        blank = blank_line(last_bk_color,last_text_color)
+        -- blank = blank_line(last_bk_color,last_text_color)
         if lines > 0 then -- scroll up
             if lines >= bottom-top+1 then
                 lines = bottom-top+1
@@ -1840,7 +1843,7 @@ end procedure
 
 override procedure position(integer line, integer column)
 -- override Euphoria built-in
-    if not window_ready then
+    if not hwnd then
         eu:position(line,column)
     else
         cursor_line = line
@@ -1923,7 +1926,7 @@ override procedure puts(integer fn, object str)
     sequence pos
     sequence substr
     integer i,j,len
-    if not window_ready or fn != STDOUT then
+    if not hwnd or fn != STDOUT then
         eu:puts(fn,str)
     else
         if atom(str) then
@@ -1981,7 +1984,7 @@ end procedure
 override procedure printf(integer fn, sequence format, object x)
 -- override Euphoria built-in 
     sequence s
-    if not window_ready or fn != STDOUT then
+    if not hwnd or fn != STDOUT then
         eu:printf(fn,format,x)
     else
         s = sprintf(format, x)
@@ -1992,7 +1995,7 @@ end procedure
 override procedure print(integer fn, object x)
 -- override Euphoria built-in 
     sequence s
-    if not window_ready or fn != STDOUT then
+    if not hwnd or fn != STDOUT then
         eu:print(fn,x)
     else
         s = sprint(x)
@@ -2012,7 +2015,7 @@ override function get_key()
 -- override Euphoria built-in
 -- get next character sent to graphics window
     integer c
-    if not window_ready then
+    if not hwnd then
         return eu:get_key()
     else
         task_yield()
@@ -2051,7 +2054,7 @@ override function gets(integer fn)
     sequence buf
     integer len,size
     
-    if not window_ready or fn != STDIN then
+    if not hwnd or fn != STDIN then
         return eu:gets(fn)
     elsif length(getc_buffer) then
         buf = getc_buffer
@@ -2098,7 +2101,7 @@ end function
 override function getc(integer fn)
 -- override Euphoria built-in 
     integer c
-    if not window_ready or fn != STDIN then
+    if not hwnd or fn != STDIN then
         return eu:getc(fn)
     elsif length(getc_buffer) = 0 then
         getc_buffer = gets(fn)
