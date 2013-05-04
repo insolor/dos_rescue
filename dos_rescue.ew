@@ -1172,6 +1172,16 @@ procedure WinMain(integer first_time)
     
         c_proc(ShowWindow, {hwnd, SW_SHOWNORMAL})
         c_proc(UpdateWindow, {hwnd})
+        
+        -- create task to check message queue
+        mq = task_create(routine_id("WinMain"), {FALSE})
+        -- check the queue every .2 to .3 seconds
+        -- (main program must do a task_yield periodically
+        -- or the window will be frozen)
+        -- task_schedule(mq, {.08, .12}) -- make keyboard very responsive
+        task_schedule(mq, {.01, .05})
+        -- assume hdc has now been set
+        -- return
     end if  
 
     -- initial task - message loop using PeekMessage
@@ -1184,19 +1194,6 @@ procedure WinMain(integer first_time)
             c_proc(TranslateMessage, {msg})
             c_proc(DispatchMessage, {msg})
         else
-            -- no messages, let another task run
-            if first_time then
-                -- create task to check message queue
-                mq = task_create(routine_id("WinMain"), {FALSE})
-                -- check the queue every .2 to .3 seconds
-                -- (main program must do a task_yield periodically
-                -- or the window will be frozen)
-                -- task_schedule(mq, {.08, .12}) -- make keyboard very responsive
-                task_schedule(mq, {.01, .05})
-                -- assume hdc has now been set
-                return
-            end if
-            
             if cursor_shape != NO_CURSOR then
                 set_caret_pos(cursor_line, cursor_column)
             end if
@@ -1206,6 +1203,8 @@ procedure WinMain(integer first_time)
                 c_proc(InvalidateRect,{hwnd,rect,FALSE})
                 repaint = FALSE
             end if
+            
+            -- no messages, let another task run
             task_yield()
         end if
     end while
