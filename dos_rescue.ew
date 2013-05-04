@@ -1206,6 +1206,8 @@ function create_window()
     -- task_schedule(mq, {.08, .12}) -- make keyboard very responsive
     task_schedule(mq, {.01, .05})
     -- assume hdc has now been set
+    c_proc(ShowWindow, {hwnd, SW_SHOWNORMAL})
+    c_proc(UpdateWindow, {hwnd})
     return hwnd
 end function
 
