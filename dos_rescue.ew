@@ -12,6 +12,7 @@ include std/convert.e -- for bytes_to_int() etc.
 include std/error.e -- for crash()
 include std/text.e -- for sprint()
 include std/os.e -- for instance()
+include std/graphics.e -- for scroll
 
 constant TRUE = 1, FALSE = 0
 constant STDIN = 0, STDOUT = 1
@@ -1804,7 +1805,9 @@ end procedure
 global procedure scroll(integer lines, integer top, integer bottom)
     sequence text, blank
     -- sequence rows
-    if lines != 0 then
+    if not hwnd then
+        graphics:scroll(lines,top,bottom)
+    elsif lines != 0 then
         -- blank = blank_line(last_bk_color,last_text_color)
         if lines > 0 then -- scroll up
             if lines >= bottom-top+1 then
