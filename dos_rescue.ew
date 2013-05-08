@@ -1270,16 +1270,16 @@ global procedure text_color(integer color)
     last_text_color = color
 end procedure
 
-global procedure bk_color(integer color)
+global procedure bk_color(integer color, integer cls = 1)
 -- was calling routine in graphics.e to set background color
 -- text or graphics modes - not really needed
     sequence vc
     if hwnd then
         last_bk_color = color
         vc = video_config()
-        -- if vc[VC_XPIXELS] then -- graphics_mode
+        if cls then
             clear_screen()
-        -- end if
+        end if
     end if
 end procedure
 
