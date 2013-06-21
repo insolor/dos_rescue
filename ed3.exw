@@ -431,13 +431,13 @@ include syncolor.e
 procedure reverse_video()
 -- start inverse video
     text_color(TOP_LINE_TEXT_COLOR)
-    bk_color(TOP_LINE_BACK_COLOR)
+    bk_color(TOP_LINE_BACK_COLOR,0)
 end procedure
 
 procedure normal_video()
 -- end inverse video
     text_color(NORMAL_COLOR)
-    bk_color(BACKGROUND_COLOR)
+    bk_color(BACKGROUND_COLOR,0)
 end procedure
 
 procedure ClearLine(window_line sline)
@@ -507,7 +507,7 @@ procedure DisplayLine(buffer_line bline, window_line sline, boolean all_clear)
 	-- line extends beyond right margin 
 	set_absolute_position(sline, screen_width)
 	text_color(BACKGROUND_COLOR)
-	bk_color(NORMAL_COLOR)
+	bk_color(NORMAL_COLOR,0)
 	puts(SCREEN, this_line[screen_width+s_shift])
 	normal_video()
     elsif not all_clear then
@@ -1682,7 +1682,7 @@ end procedure
 procedure shell(sequence command)
 -- run an external command
     
-    bk_color(BLACK)
+    bk_color(BLACK,0)
     text_color(WHITE)
     clear_screen()
     system(command, 1)
@@ -2465,7 +2465,7 @@ procedure ed_main()
 	screen_length = config[VC_LINES]
     end if
     cursor(UNDERLINE_CURSOR)
-    bk_color(BLACK)
+    bk_color(BLACK,0)
     text_color(WHITE)
     position(screen_length, 1)
     puts(SCREEN, BLANK_LINE)
