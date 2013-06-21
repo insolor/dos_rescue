@@ -520,7 +520,8 @@ function reverse_color(object colors)
     return colors
 end function
 
-integer border
+-- integer border
+object border
 border = 10
 
 integer repaint
@@ -728,6 +729,7 @@ procedure update_window_size(sequence screen_size)
     c_proc(GetWindowRect,{hwnd,rect})
     sequence winsize = peek4u({rect,4})
     winsize[3..4] += - winsize[1..2] - clientsize + screen_size*scale
+    border = floor((clientsize - screen_size*scale)/2)
     c_proc(SetWindowPos, hwnd & 0 & winsize & HWND_TOP)
 end procedure
 
