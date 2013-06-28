@@ -521,8 +521,7 @@ function reverse_color(object colors)
 end function
 
 -- integer border
-object border
-border = 10
+sequence border = {0,0}
 
 integer repaint
 repaint = FALSE
@@ -691,7 +690,8 @@ key_map[#79] = 324 -- F10
 key_map[#7A] = {343, 389} -- F11 {dos, win32}
 key_map[#7B] = {344, 390} -- F12 {dos, win32}
 
-atom screen_size_x, screen_size_y, bytes_per_line
+atom bytes_per_line
+sequence screen_size
 atom char_height, char_width --, char_extra
 
 -- integer window_ready
@@ -729,7 +729,6 @@ procedure update_window_size(sequence screen_size)
     c_proc(GetWindowRect,{hwnd,rect})
     sequence winsize = peek4u({rect,4})
     winsize[3..4] += - winsize[1..2] - clientsize + screen_size*scale
-    border = floor((clientsize - screen_size*scale)/2)
     c_proc(SetWindowPos, hwnd & 0 & winsize & HWND_TOP)
 end procedure
 
@@ -794,9 +793,10 @@ procedure init_window(atom hwnd)
     lines = loc_vc[VC_LINES]
     
     update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS]+2*border)
-    screen_size_x = loc_vc[VC_XPIXELS]
-    screen_size_y = loc_vc[VC_YPIXELS]
-    bytes_per_line = and_bits(screen_size_x+3,-4)
+/*    screen_size_x = loc_vc[VC_XPIXELS]
+    screen_size_y = loc_vc[VC_YPIXELS]*/
+    screen_size = loc_vc[VC_XPIXELS..VC_YPIXELS]
+    bytes_per_line = and_bits(screen_size[1]+3,-4)
     
     -- Initialize palette
     integer ncolors = loc_vc[VC_NCOLORS]
@@ -846,7 +846,7 @@ procedure init_window(atom hwnd)
     
     for i = 1 to pages do
         bitmap_pages &= create_dib_section(hdcWindow,
-            screen_size_x, screen_size_y, reverse_color(color_map))
+            screen_size[1], screen_size[2], reverse_color(color_map))
         memory_pages &= peek4u(ppvBits)
     end for
     
@@ -1008,9 +1008,13 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
     elsif iMsg = WM_SIZE and wParam != SIZE_MINIMIZED then
         c_proc(GetClientRect,{hwnd,rect})
         seqrect = peek4u({rect,4})
-        integer scale = min(floor(seqrect[3..4]/{screen_size_x,screen_size_y}))
+        integer scale = min(floor(seqrect[3..4]/screen_size))
         if scale <= 0 then
             scale = 1
+        end if
+        border = floor((seqrect[3..4] - screen_size*scale)/2)
+        if border[1] < 0 or border[2] < 0 then
+            border = {0,0}
         end if
         set_scale(scale)
         return 0
@@ -1252,7 +1256,7 @@ override procedure clear_screen()
 -- override Euphoria built-in
     sequence blank
     if hwnd then
-        clear_region(0, 0, screen_size_x, screen_size_y)
+        clear_region(0, 0, screen_size[1], screen_size[2])
         -- blank = blank_line(last_bk_color,last_text_color)
         
         cursor_column = 1
@@ -1345,12 +1349,12 @@ end function
 
 global procedure pixel(object c, sequence xy)
     atom off
-    if hwnd and atom(xy[1]) and atom(xy[2]) and xy[1] >= 0 and xy[1] < screen_size_x and
-            xy[2] >= 0 and xy[2] < screen_size_y then
+    if hwnd and atom(xy[1]) and atom(xy[2]) and xy[1] >= 0 and xy[1] < screen_size[1] and
+            xy[2] >= 0 and xy[2] < screen_size[2] then
         c = floor(c)
         xy = floor(xy)
-        if sequence(c) and length(c) > screen_size_x-xy[1] then
-            c = c[1..screen_size_x-xy[1]]
+        if sequence(c) and length(c) > screen_size[1]-xy[1] then
+            c = c[1..screen_size[1]-xy[1]]
         end if
         c = and_bits(color_mask,c)
         off = memory_pages[active_page] + xy[1] + xy[2]*bytes_per_line
@@ -1361,15 +1365,15 @@ end procedure
 
 global function get_pixel(sequence xyn)
     atom off
-    if hwnd and xyn[1] >= 0 and xyn[1] < screen_size_x and
-            xyn[2] >= 0 and xyn[2] < screen_size_y then
+    if hwnd and xyn[1] >= 0 and xyn[1] < screen_size[1] and
+            xyn[2] >= 0 and xyn[2] < screen_size[2] then
         xyn = floor(xyn)
         off = memory_pages[active_page] + xyn[1] + xyn[2]*bytes_per_line
         if length(xyn) = 2 then
             return peek(off)
         elsif length(xyn) = 3 then
-            if xyn[3]+xyn[1]>=screen_size_x then
-                return peek({off,screen_size_x-xyn[1]-1}) & repeat(0,xyn[3]+xyn[1]-screen_size_x)
+            if xyn[3]+xyn[1]>=screen_size[1] then
+                return peek({off,screen_size[1]-xyn[1]-1}) & repeat(0,xyn[3]+xyn[1]-screen_size[1])
             else
                 return peek({off,xyn[3]})
             end if
@@ -1381,17 +1385,17 @@ end function
 
 global procedure display_image(sequence xy, sequence image)
     atom off
-    if hwnd and xy[1] >= 0 and xy[1] < screen_size_x and
-            xy[2] >= 0 and xy[2] < screen_size_y then
+    if hwnd and xy[1] >= 0 and xy[1] < screen_size[1] and
+            xy[2] >= 0 and xy[2] < screen_size[2] then
         image = and_bits(color_mask,floor(image))
         xy = floor(xy)
         off = memory_pages[active_page] + xy[1] + xy[2]*bytes_per_line
-        if length(image) >= screen_size_y-xy[2] then
-            image = image[1..screen_size_y-xy[2]]
+        if length(image) >= screen_size[2]-xy[2] then
+            image = image[1..screen_size[2]-xy[2]]
         end if
         for i = 1 to length(image) do
-            if length(image[i]) >= screen_size_x-xy[1] then
-                image[i] = image[i][1..screen_size_x-xy[1]-1]
+            if length(image[i]) >= screen_size[1]-xy[1] then
+                image[i] = image[i][1..screen_size[1]-xy[1]-1]
             end if
             poke(off,image[i])
             off += bytes_per_line
@@ -1404,10 +1408,10 @@ global function save_image(sequence xy1, sequence xy2)
     atom off, width
     sequence image
     image = {}
-    if hwnd and xy1[1] >= 0 and xy1[1] < screen_size_x and
-            xy1[2] >= 0 and xy1[2] < screen_size_y and
-            xy2[1] >= 0 and xy2[1] < screen_size_x and
-            xy2[2] >= 0 and xy2[2] < screen_size_y then
+    if hwnd and xy1[1] >= 0 and xy1[1] < screen_size[1] and
+            xy1[2] >= 0 and xy1[2] < screen_size[2] and
+            xy2[1] >= 0 and xy2[1] < screen_size[1] and
+            xy2[2] >= 0 and xy2[2] < screen_size[2] then
         off = memory_pages[active_page] + xy1[1] + xy1[2]*bytes_per_line
         width = xy2[1]-xy1[1]+1
         for i = xy1[2] to xy2[2] do
@@ -1653,7 +1657,7 @@ global function save_screen(object r, sequence file_name)
     
     color = floor(get_all_palette()*255/63)
     if atom(r) then
-        image = save_image({0,0},{screen_size_x,screen_size_y}-1)
+        image = save_image({0,0},screen_size-1)
     elsif r[2][1] >= vc[VC_XPIXELS] or r[2][2] >= vc[VC_YPIXELS] then
         return BMP_INVALID_MODE   -- not a valid argument
     else
@@ -1796,7 +1800,7 @@ public procedure putsxy(sequence pos, sequence s, integer fcolor, integer bcolor
 end procedure
 
 procedure clear_lines(integer top, integer bottom)
-    clear_region(0,(top-1)*char_height,screen_size_x,bottom*char_height)
+    clear_region(0,(top-1)*char_height,screen_size[1],bottom*char_height)
 end procedure
 
 procedure move_rows(integer top, integer bottom, integer rows)
