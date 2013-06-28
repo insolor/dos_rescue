@@ -134,7 +134,9 @@ constant DIB_RGB_COLORS = 0
 constant rcPaint = 8, sizeofPAINTSTRUCT = 64
 
 -- RECT
-constant LEFT = 0, TOP = 4, RIGHT = 8, BOTTOM = 12, sizeofRECT = 16
+constant
+    LEFT = 0, TOP = 4, RIGHT = 8, BOTTOM = 12,
+    sizeofRECT = 16
 
 -- TEXTMETRIC
 constant tmHeight = 0, tmAveCharWidth = 20, sizeofTEXTMETRIC = 53
@@ -550,7 +552,6 @@ global function palette(integer color_index, sequence new_color_triple)
     if color_index < 0 or color_index >= length(color_map) then
         return -1
     else
-        -- old_color = floor(and_bits(color_map[color_index+1],{#FF,#FF00,#FF0000})/{#4,#400,#40000})
         old_color = floor(unpack_color(color_map[color_index+1])/4)
         new_color_triple = floor(new_color_triple)
         color_map[color_index+1] = pack_color(floor(new_color_triple*255/63))
@@ -589,7 +590,6 @@ global function get_all_palette()
     sequence s
     s = color_map
     for i = 1 to length(s) do
-        -- s[i] = floor(and_bits(s[i],{#FF,#FF00,#FF0000})/{#4,#400,#40000} )
         s[i] = floor(unpack_color(s[i])/4)
     end for
     return s
@@ -602,15 +602,6 @@ sequence bitmap_pages, memory_pages
 bitmap_pages = {}
 memory_pages = {}
 atom hOldActiveBitmap, hOldDisplayBitmap
-
--- function blank_line(integer bcolor, integer tcolor)
-    -- sequence row
-    -- row = {}
-    -- for i = 1 to columns do
-        -- row &= {' ', bcolor*#10+tcolor}
-    -- end for
-    -- return row
--- end function
 
 global function get_active_page()
     return active_page-1
@@ -753,20 +744,12 @@ procedure init_window(atom hwnd)
     if font != 0 then
         c_proc(DeleteObject,{font})
     end if
-    -- if loc_vc[VC_XPIXELS] = 0 then
-        -- poke4(logfont+lfHeight,default_char_height)
-        -- poke4(logfont+lfWidth,default_char_width)
-    -- else
-        char_width = floor(loc_vc[VC_XPIXELS]/loc_vc[VC_COLUMNS])
-        char_height = loc_vc[VC_YPIXELS]/loc_vc[VC_LINES]
-        poke4(logfont+lfHeight,char_height)
-        -- if floor(char_height) = 8 then -- some tweaks for the Courier New font
-            -- poke4(logfont+lfWidth,char_width-1)
-        -- else
-            -- poke4(logfont+lfWidth,char_width+1)
-        -- end if
-        poke4(logfont+lfWidth,char_width)
-    -- end if
+
+    char_width = floor(loc_vc[VC_XPIXELS]/loc_vc[VC_COLUMNS])
+    char_height = loc_vc[VC_YPIXELS]/loc_vc[VC_LINES]
+    poke4(logfont+lfHeight,char_height)
+    poke4(logfont+lfWidth,char_width)
+
     poke4(logfont+lfEscapement,{0,0}) -- escapement and orientation are ignored
     poke4(logfont+lfWeight,FW_NORMAL)
     -- poke4(logfont+lfWeight,FW_SEMIBOLD)
@@ -825,7 +808,6 @@ procedure init_window(atom hwnd)
     
     -- Initialize pages
     pages = loc_vc[VC_PAGES]
-    -- sequence blank = blank_line(BLACK,WHITE)
     active_page = 1
     display_page = 1
     
@@ -1126,7 +1108,6 @@ end function
 constant msg = allocate(SIZE_OF_MESSAGE)
 
 procedure message_loop(atom hwnd)
--- main routine 
     -- initial task - message loop using PeekMessage
     while TRUE do
         if c_func(PeekMessage, {msg, NULL, 0, 0, PM_REMOVE}) then
@@ -1151,7 +1132,6 @@ procedure message_loop(atom hwnd)
             task_yield()
         end if
     end while
-    -- char_buff &= 27 -- Esc character to terminate the other tasks
 end procedure
 
 object AppName
