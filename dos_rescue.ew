@@ -795,8 +795,7 @@ procedure init_window(atom hwnd)
     lines = loc_vc[VC_LINES]
     
     update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS]+2*border)
-/*    screen_size_x = loc_vc[VC_XPIXELS]
-    screen_size_y = loc_vc[VC_YPIXELS]*/
+    
     screen_size = loc_vc[VC_XPIXELS..VC_YPIXELS]
     bytes_per_line = and_bits(screen_size[X]+3,-4)
     
@@ -992,17 +991,23 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
     elsif iMsg = WM_PAINT then
         hdcWindow = c_func(BeginPaint, {hwnd, paintstruct})
             seqrect = peek4u({paintstruct+rcPaint, 4})
+            sequence src, dest = seqrect
             if scale < 2 then
+                dest[1..2] += border
+                src = seqrect[1..2]
                 if active_page = display_page then
-                    c_proc(BitBlt, hdcWindow & seqrect & hdcActive & seqrect[1..2]-border & SRCCOPY)
+                    c_proc(BitBlt, hdcWindow & dest & hdcActive & src & SRCCOPY)
                 else
-                    c_proc(BitBlt, hdcWindow & seqrect & hdcDisplay & seqrect[1..2]-border & SRCCOPY)
+                    c_proc(BitBlt, hdcWindow & dest & hdcDisplay & src & SRCCOPY)
                 end if
             else
+                dest[1..2] += border
+                dest[3..4] *= scale
+                src = seqrect
                 if active_page = display_page then
-                    c_proc(StretchBlt, hdcWindow & seqrect & hdcActive & floor(seqrect/scale) & SRCCOPY)
+                    c_proc(StretchBlt, hdcWindow & dest & hdcActive & src & SRCCOPY)
                 else
-                    c_proc(StretchBlt, hdcWindow & seqrect & hdcDisplay & floor(seqrect/scale) & SRCCOPY)
+                    c_proc(StretchBlt, hdcWindow & dest & hdcDisplay & src & SRCCOPY)
                 end if
             end if
         c_proc(EndPaint, {hwnd, paintstruct})
