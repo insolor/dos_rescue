@@ -168,13 +168,13 @@ constant ED_CURSOR = THICK_UNDERLINE_CURSOR
 		     -- BLOCK_CURSOR
 		   
 -- number of lines on screen: (25,28,43 or 50)
-integer INITIAL_LINES -- when editor starts up
+-- integer INITIAL_LINES -- when editor starts up
 -- if platform() = WIN32 then
     -- INITIAL_LINES = 25
 -- else
-    INITIAL_LINES = 43
+    -- INITIAL_LINES = 43
 -- end if
-integer FINAL_LINES     -- when editor is finished
+-- integer FINAL_LINES     -- when editor is finished
 
 -- colors
 constant TOP_LINE_TEXT_COLOR = BLACK,
@@ -2460,10 +2460,10 @@ procedure ed_main()
 
     -- exit editor
     delete_editbuff()
-    if screen_length != FINAL_LINES then
+    -- if screen_length != FINAL_LINES then
 	-- screen_length = text_rows(FINAL_LINES)
-	screen_length = config[VC_LINES]
-    end if
+	-- screen_length = config[VC_LINES]
+    -- end if
     cursor(UNDERLINE_CURSOR)
     bk_color(BLACK,0)
     text_color(WHITE)
