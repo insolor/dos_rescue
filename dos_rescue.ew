@@ -12,6 +12,7 @@ include std/convert.e -- for bytes_to_int() etc.
 include std/error.e -- for crash()
 include std/text.e -- for sprint()
 include std/os.e -- for instance()
+include std/graphics.e -- for scroll
 
 constant TRUE = 1, FALSE = 0
 constant STDIN = 0, STDOUT = 1
@@ -1278,16 +1279,16 @@ global procedure text_color(integer color)
     last_text_color = color
 end procedure
 
-global procedure bk_color(integer color)
+global procedure bk_color(integer color, integer cls = 1)
 -- was calling routine in graphics.e to set background color
 -- text or graphics modes - not really needed
     sequence vc
     if hwnd then
         last_bk_color = color
         vc = video_config()
-        -- if vc[VC_XPIXELS] then -- graphics_mode
+        if cls then
             clear_screen()
-        -- end if
+        end if
     end if
 end procedure
 
@@ -1813,7 +1814,9 @@ end procedure
 global procedure scroll(integer lines, integer top, integer bottom)
     sequence text, blank
     -- sequence rows
-    if lines != 0 then
+    if not hwnd then
+        graphics:scroll(lines,top,bottom)
+    elsif lines != 0 then
         -- blank = blank_line(last_bk_color,last_text_color)
         if lines > 0 then -- scroll up
             if lines >= bottom-top+1 then
