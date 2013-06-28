@@ -12,8 +12,8 @@
 --                     (see euphoria\include\graphics.e for a list of modes)
 -- Press Enter at any time to skip to the next function.
 
-constant GRAPHICS_MODE = 18  
--- constant GRAPHICS_MODE = 259
+-- constant GRAPHICS_MODE = 18  
+constant GRAPHICS_MODE = 259
 
 without type_check
 
