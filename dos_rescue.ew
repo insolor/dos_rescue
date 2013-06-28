@@ -963,6 +963,7 @@ end procedure
 -- Window proc --
 
 atom buff = allocate(1) -- a buffer for CharToOemBuff function
+atom hkeyFullScreen
 
 function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
 -- callback routine to handle Window class
@@ -979,9 +980,10 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         end if
         
         -- Register Alt+Enter hotkey
+        hkeyFullScreen = c_func(GlobalAddAtom,{allocate_string("AltEnter")})
         c_proc(RegisterHotKey, {
             hwnd,
-            c_func(GlobalAddAtom,{allocate_string("AltEnter")}),
+            hkeyFullScreen,
             MOD_ALT,
             13
         })
@@ -1061,7 +1063,9 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         return 0
     
     elsif iMsg = WM_HOTKEY then
-        toggle_full_screen()
+        if wParam = hkeyFullScreen then
+            toggle_full_screen()
+        end if
     
     elsif iMsg = WM_SETFOCUS then
         if hwnd and cursor_shape != NO_CURSOR then
