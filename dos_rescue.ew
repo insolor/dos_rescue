@@ -977,17 +977,19 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
             seqrect = peek4u({paintstruct+rcPaint, 4})
             sequence src, dest = seqrect
             if scale < 2 then
-                dest[1..2] += border
-                src = seqrect[1..2]
+                -- dest[1..2] += border
+                src = dest[1..2]-border
                 if active_page = display_page then
                     c_proc(BitBlt, hdcWindow & dest & hdcActive & src & SRCCOPY)
                 else
                     c_proc(BitBlt, hdcWindow & dest & hdcDisplay & src & SRCCOPY)
                 end if
             else
-                dest[1..2] += border
-                dest[3..4] *= scale
-                src = seqrect
+                -- dest[1..2] += border
+                -- dest[3..4] *= scale
+                src = dest
+                src[1..2] -= border
+                src = floor(src/scale+1.0)
                 if active_page = display_page then
                     c_proc(StretchBlt, hdcWindow & dest & hdcActive & src & SRCCOPY)
                 else
