@@ -977,7 +977,6 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
             seqrect = peek4u({paintstruct+rcPaint, 4})
             sequence src, dest = seqrect
             if scale < 2 then
-                -- dest[1..2] += border
                 src = dest[1..2]-border
                 if active_page = display_page then
                     c_proc(BitBlt, hdcWindow & dest & hdcActive & src & SRCCOPY)
@@ -985,8 +984,6 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
                     c_proc(BitBlt, hdcWindow & dest & hdcDisplay & src & SRCCOPY)
                 end if
             else
-                -- dest[1..2] += border
-                -- dest[3..4] *= scale
                 src = dest
                 src[1..2] -= border
                 src = floor(src/scale+1.0)
@@ -1253,7 +1250,6 @@ override procedure clear_screen()
     sequence blank
     if hwnd then
         clear_region(0, 0, screen_size[X], screen_size[Y])
-        -- blank = blank_line(last_bk_color,last_text_color)
         
         cursor_column = 1
         cursor_line = 1
@@ -2173,7 +2169,6 @@ poke4(sound_buff, {
 
 sequence samples
 samples = repeat(0,numSamples)
-integer f = 0
 global procedure sound(atom freq)
     atom mult
     -- task_yield()
