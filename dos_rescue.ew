@@ -482,7 +482,6 @@ function reverse_color(object colors)
     return colors
 end function
 
--- integer border
 sequence border = {0,0}
 
 integer repaint
@@ -556,9 +555,6 @@ end function
 -- Video page routines --
 
 integer npages, active_page, display_page
--- sequence bitmap_pages, memory_pages
--- bitmap_pages = {}
--- memory_pages = {}
 constant PAGE_HBITMAP = 1, PAGE_PDIB = 2
 sequence pages
 pages = {}
@@ -646,10 +642,7 @@ key_map[#7B] = {344, 390} -- F12 {dos, win32}
 
 atom bytes_per_line
 sequence screen_size
-atom char_height, char_width --, char_extra
-
--- integer window_ready
--- window_ready = FALSE
+atom char_height, char_width
 
 sequence char_buff
 global sequence key_buff
@@ -785,8 +778,7 @@ procedure init_window(atom hwnd)
     for i = 1 to length(pages) do
         c_proc(DeleteObject,{pages[i][PAGE_HBITMAP]})
     end for
-    -- bitmap_pages = {}
-    -- memory_pages = {}
+
     pages = {}
     
     for i = 1 to npages do
