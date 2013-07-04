@@ -1203,7 +1203,7 @@ procedure clear_region(integer x1, integer y1, integer x2, integer y2)
     c_proc(FillRect, hdcActive & rect & brushes[1+last_bk_color])
 end procedure
 
-override procedure clear_screen()
+global procedure clear_screen()
 -- override Euphoria built-in
     sequence blank
     if hwnd then
