@@ -1,0 +1,10 @@
+include ../dos_rescue.ew
+
+graphics_mode(259)
+
+rectangle(WHITE,1,{10,10},{20,20})
+
+
+wait_key()
+
+graphics_mode(-1)

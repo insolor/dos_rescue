@@ -1,0 +1,20 @@
+-- Example from the 'set_active_page' artilce of the Eu3 manual
+
+-- include image.e
+include ../dos_rescue.ew as dos_rescue
+
+-- active & display pages are initially both 0
+dos_rescue:puts(1, "\nThis is page 0\n")
+set_active_page(1)     -- screen output will now go to page 1
+dos_rescue:clear_screen()
+dos_rescue:puts(1, "\nNow we've flipped to page 1\n")
+if dos_rescue:getc(0) then        -- wait for key-press
+end if
+set_display_page(1)    -- "Now we've ..." becomes visible
+if dos_rescue:getc(0) then        -- wait for key-press
+end if
+set_display_page(0)    -- "This is ..." becomes visible again
+set_active_page(0)
+
+if dos_rescue:getc(0) then
+end if
