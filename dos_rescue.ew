@@ -555,6 +555,7 @@ end function
 -- Video page routines --
 
 integer npages, active_page, display_page
+npages = 0
 constant PAGE_HBITMAP = 1, PAGE_PDIB = 2
 sequence pages
 pages = {}
