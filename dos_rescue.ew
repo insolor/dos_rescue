@@ -1205,7 +1205,6 @@ end procedure
 
 override procedure clear_screen()
 -- override Euphoria built-in
-    sequence blank
     if hwnd then
         clear_region(0, 0, screen_size[X], screen_size[Y])
         
@@ -1761,12 +1760,11 @@ procedure move_rows(integer top, integer bottom, integer rows)
 end procedure
 
 global procedure scroll(integer lines, integer top, integer bottom)
-    sequence text, blank
+    sequence text
     -- sequence rows
     if not hwnd then
         graphics:scroll(lines,top,bottom)
     elsif lines != 0 then
-        -- blank = blank_line(last_bk_color,last_text_color)
         if lines > 0 then -- scroll up
             if lines >= bottom-top+1 then
                 lines = bottom-top+1
