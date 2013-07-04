@@ -1,0 +1,10 @@
+include dr_engine.ew as dr
+
+global
+procedure clear_screen()
+    if hwnd then
+        dr:clear_screen()
+    else
+        eu:clear_screen()
+    end if
+end procedure
