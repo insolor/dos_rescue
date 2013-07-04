@@ -555,10 +555,12 @@ end function
 
 -- Video page routines --
 
-integer pages, active_page, display_page
-sequence bitmap_pages, memory_pages
-bitmap_pages = {}
-memory_pages = {}
+integer npages, active_page, display_page
+-- sequence bitmap_pages, memory_pages
+-- bitmap_pages = {}
+-- memory_pages = {}
+sequence pages
+pages = {}
 atom hOldActiveBitmap, hOldDisplayBitmap
 
 global function get_active_page()
@@ -570,23 +572,23 @@ global function get_display_page()
 end function
 
 global procedure set_display_page(integer i)
-    if i >= 0 and i < pages then
+    if i >= 0 and i < npages then
         display_page = i+1
         if display_page != active_page then
-            c_proc(SelectObject,{hdcDisplay,bitmap_pages[display_page]})
+            c_proc(SelectObject,{hdcDisplay,pages[display_page][1]})
         end if
         repaint = TRUE
     end if
 end procedure
 
 global procedure set_active_page(integer i)
-    if i >= 0 and i < pages then
+    if i >= 0 and i < npages then
         if display_page = i+1 then
             c_proc(SelectObject,{hdcDisplay,hOldDisplayBitmap})
-            c_proc(SelectObject,{hdcActive,bitmap_pages[i+1]})
+            c_proc(SelectObject,{hdcActive,pages[i+1][1]})
         elsif display_page = active_page then
-            c_proc(SelectObject,{hdcActive,bitmap_pages[i+1]})
-            c_proc(SelectObject,{hdcDisplay,bitmap_pages[display_page]})
+            c_proc(SelectObject,{hdcActive,pages[i+1][1]})
+            c_proc(SelectObject,{hdcDisplay,pages[display_page][1]})
         end if
         active_page = i+1
         repaint = TRUE
@@ -668,7 +670,7 @@ function create_dib_section(atom hdc, integer width, integer height, sequence co
     
     poke4(bitmapinfo+bmiColors, color_map)
     
-    return c_func(CreateDIBSection,{hdc, bitmapinfo, DIB_RGB_COLORS, ppvBits, NULL, NULL})
+    return c_func(CreateDIBSection,{hdc, bitmapinfo, DIB_RGB_COLORS, ppvBits, NULL, NULL}) & peek4u(ppvBits)
 end function
 
 procedure update_window_size(sequence screen_size)
@@ -765,7 +767,7 @@ procedure init_window(atom hwnd)
     end for
     
     -- Initialize pages
-    pages = loc_vc[VC_PAGES]
+    npages = loc_vc[VC_PAGES]
     active_page = 1
     display_page = 1
     
@@ -779,21 +781,21 @@ procedure init_window(atom hwnd)
         c_proc(SelectObject,{hdcDisplay,hOldDisplayBitmap})
     end if
     
-    for i = 1 to length(bitmap_pages) do
-        c_proc(DeleteObject,{bitmap_pages[i]})
+    for i = 1 to length(pages) do
+        c_proc(DeleteObject,{pages[i][1]})
     end for
-    bitmap_pages = {}
-    memory_pages = {}
+    -- bitmap_pages = {}
+    -- memory_pages = {}
+    pages = {}
     
-    for i = 1 to pages do
-        bitmap_pages &= create_dib_section(hdcWindow,
-            screen_size[X], screen_size[Y], reverse_color(color_map))
-        memory_pages &= peek4u(ppvBits)
+    for i = 1 to npages do
+        pages = append(pages, create_dib_section(hdcWindow,
+            screen_size[X], screen_size[Y], reverse_color(color_map)))
     end for
     
-    c_proc(SelectObject,{hdcActive,bitmap_pages[active_page]})
+    c_proc(SelectObject,{hdcActive,pages[active_page][1]})
     if active_page != display_page then
-        c_proc(SelectObject,{hdcDisplay,bitmap_pages[display_page]})
+        c_proc(SelectObject,{hdcDisplay,pages[display_page][1]})
     end if
     
     -- Select font to the active context
@@ -1021,8 +1023,8 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         -- do not return 0 --
         
     elsif iMsg = WM_DESTROY then
-        for i = 1 to length(bitmap_pages) do
-            c_proc(DeleteObject,{bitmap_pages[i]})
+        for i = 1 to npages do
+            c_proc(DeleteObject,{pages[i][1]})
         end for
         
         c_proc(DeleteDC, {hdcActive})
@@ -1280,16 +1282,16 @@ end function
 
 -- experimental
 global procedure poke_pixel(integer offset, object values)
-    poke(memory_pages[active_page]+offset, values)
+    poke(pages[active_page][2]+offset, values)
     repaint = TRUE
 end procedure
 
 -- experimental
 global function peek_pixel(object a)
     if atom(a) then
-        return peek(memory_pages[active_page]+a)
+        return peek(pages[active_page][2]+a)
     else
-        a[1] = memory_pages[active_page] + a[1]
+        a[1] = pages[active_page][2] + a[1]
         return peek(a)
     end if
 end function
@@ -1306,7 +1308,7 @@ global procedure pixel(object c, sequence xy)
             c = c[1..screen_size[X]-xy[X]]
         end if
         c = and_bits(color_mask,c)
-        off = memory_pages[active_page] + xy[X] + xy[Y]*bytes_per_line
+        off = pages[active_page][2] + xy[X] + xy[Y]*bytes_per_line
         poke(off,c)
         repaint = TRUE
     end if
@@ -1317,7 +1319,7 @@ global function get_pixel(sequence xyn)
     if hwnd and xyn[X] >= 0 and xyn[X] < screen_size[X] and
             xyn[Y] >= 0 and xyn[Y] < screen_size[Y] then
         xyn = floor(xyn)
-        off = memory_pages[active_page] + xyn[X] + xyn[Y]*bytes_per_line
+        off = pages[active_page][2] + xyn[X] + xyn[Y]*bytes_per_line
         if length(xyn) = 2 then
             return peek(off)
         elsif length(xyn) = 3 then
@@ -1338,7 +1340,7 @@ global procedure display_image(sequence xy, sequence image)
             xy[Y] >= 0 and xy[Y] < screen_size[Y] then
         image = and_bits(color_mask,floor(image))
         xy = floor(xy)
-        off = memory_pages[active_page] + xy[X] + xy[Y]*bytes_per_line
+        off = pages[active_page][2] + xy[X] + xy[Y]*bytes_per_line
         if length(image) >= screen_size[Y]-xy[Y] then
             image = image[1..screen_size[Y]-xy[Y]]
         end if
@@ -1361,7 +1363,7 @@ global function save_image(sequence xy1, sequence xy2)
             xy1[Y] >= 0 and xy1[Y] < screen_size[Y] and
             xy2[X] >= 0 and xy2[X] < screen_size[X] and
             xy2[Y] >= 0 and xy2[Y] < screen_size[Y] then
-        off = memory_pages[active_page] + xy1[X] + xy1[Y]*bytes_per_line
+        off = pages[active_page][2] + xy1[X] + xy1[Y]*bytes_per_line
         width = xy2[X]-xy1[X]+1
         for i = xy1[Y] to xy2[Y] do
             image = append(image, peek({off,width}))
@@ -1754,7 +1756,7 @@ end procedure
 
 procedure move_rows(integer top, integer bottom, integer rows)
     atom off1, off2
-    off1 = memory_pages[active_page] + top*bytes_per_line
+    off1 = pages[active_page][2] + top*bytes_per_line
     off2 = off1 - rows*bytes_per_line
     mem_copy(off2, off1, (bottom-top+1)*bytes_per_line)
 end procedure
