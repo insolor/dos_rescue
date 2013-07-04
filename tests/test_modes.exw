@@ -1,0 +1,49 @@
+-- include image.e
+-- include machine.e
+-- include get.e
+include ../dos_rescue.ew as dos_rescue
+without warning
+
+dos_rescue:use_vesa(1)
+
+sequence s,vc
+s = {}
+for n = 0 to 19 do
+    s &= n
+end for
+for n = 256 to 261 do
+    s &= n
+end for
+
+for n = 1 to length(s) do
+    if not graphics_mode(s[n]) then
+        vc = video_config()
+        print(1,vc)
+        puts(1,'\n')
+        if vc[VC_NCOLORS]<16 then
+            for i = 0 to vc[VC_NCOLORS] do
+                text_color(i)
+                puts(1,219)
+            end for
+            puts(1,'\n')
+        else
+            for i = 0 to vc[VC_NCOLORS]/16-1 do
+                for j = 0 to 15 do
+                    text_color(i*16+j)
+                    puts(1,219)
+                end for
+                puts(1,'\n')
+            end for
+        end if
+        text_color(WHITE)
+        if get_pixel({0,0})!=-1 and save_screen(0,sprintf("pal-%03d.bmp", {s[n]})) then
+        end if
+        puts(1,"Press Enter...")
+        if getc(0) then
+        end if
+        clear_screen()
+    end if
+end for
+
+if graphics_mode(-1) then
+end if
