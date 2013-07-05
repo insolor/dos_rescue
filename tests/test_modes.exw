@@ -36,8 +36,8 @@ for n = 1 to length(s) do
             end for
         end if
         text_color(WHITE)
-        if get_pixel({0,0})!=-1 and save_screen(0,sprintf("pal-%03d.bmp", {s[n]})) then
-        end if
+        -- if get_pixel({0,0})!=-1 and save_screen(0,sprintf("pal-%03d.bmp", {s[n]})) then
+        -- end if
         puts(1,"Press Enter...")
         if getc(0) then
         end if
