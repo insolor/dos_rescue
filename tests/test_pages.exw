@@ -3,6 +3,8 @@
 -- include image.e
 include ../dos_rescue.ew as dos_rescue
 
+graphics_mode(16)
+
 -- active & display pages are initially both 0
 dos_rescue:puts(1, "\nThis is page 0\n")
 set_active_page(1)     -- screen output will now go to page 1
