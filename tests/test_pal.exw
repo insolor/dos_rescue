@@ -1,5 +1,5 @@
 
-include ../dos_rescue.ew as dos_rescue
+include ../dos_rescue.ew
 -- include image.e
 
 constant pal = {
@@ -50,27 +50,27 @@ procedure show_palette(sequence xy0, integer first, integer last, integer width)
     end for
 end procedure
 
-dos_rescue:clear_screen()
-dos_rescue:puts(1,"Standard palette")
+clear_screen()
+puts(1,"Standard palette")
 show_palette({0,8},0,255,16)
 
-if dos_rescue:getc(0) then
+if getc(0) then
 end if
 
-dos_rescue:clear_screen()
-dos_rescue:puts(1,"Standard palette\n")
-dos_rescue:puts(1,"from 32nd color by 24 colors per line")
+clear_screen()
+puts(1,"Standard palette\n")
+puts(1,"from 32nd color by 24 colors per line")
 show_palette({0,16},32,247,24)
 
-if dos_rescue:getc(0) then
+if getc(0) then
 end if
 
-dos_rescue:clear_screen()
+clear_screen()
 all_palette(pal)
-dos_rescue:puts(1,"Custom palette")
+puts(1,"Custom palette")
 show_palette({0,8},0,255,16)
 
-if dos_rescue:getc(0) then
+if getc(0) then
 end if
 
 if graphics_mode(-1) then
