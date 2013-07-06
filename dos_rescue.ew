@@ -1262,8 +1262,7 @@ global function graphics_mode(integer m)
             init_window(hwnd)
         end if
         
-        cursor_shape = NO_CURSOR
-        destroy_caret(hwnd)
+        cursor(NO_CURSOR)
         
         last_text_color = WHITE
         last_bk_color = BLACK
