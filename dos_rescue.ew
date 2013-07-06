@@ -1611,7 +1611,7 @@ global function save_screen(object r, sequence file_name)
     return save_bitmap({color,image}, file_name)
 end function
 
--- High-level graphics routines --
+-- Graphics primitives --
 
 global procedure ellipse(integer color, integer fill, sequence coord1, sequence coord2)
     if hwnd then
