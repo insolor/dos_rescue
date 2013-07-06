@@ -896,6 +896,19 @@ procedure destroy_caret(atom hwnd)
     c_proc(DestroyCaret,{})
 end procedure
 
+global procedure cursor(integer i)
+    if cursor_shape != NO_CURSOR then
+        destroy_caret(hwnd)
+    end if
+    
+    cursor_shape = i
+    
+    if hwnd and i != NO_CURSOR then
+        reshape_cursor(cursor_shape)
+        create_caret(hwnd)
+    end if
+end procedure
+
 -- Window proc --
 
 atom buff = allocate(1) -- a buffer for CharToOemBuff function
@@ -1233,19 +1246,6 @@ global procedure bk_color(integer color, integer cls = 1)
         if cls then
             clear_screen()
         end if
-    end if
-end procedure
-
-global procedure cursor(integer i)
-    if cursor_shape != NO_CURSOR then
-        destroy_caret(hwnd)
-    end if
-    
-    cursor_shape = i
-    
-    if hwnd and i != NO_CURSOR then
-        reshape_cursor(cursor_shape)
-        create_caret(hwnd)
     end if
 end procedure
 
