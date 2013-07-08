@@ -868,6 +868,23 @@ procedure set_scale(integer x)
     end if
 end procedure
 
+procedure rescale()
+    c_proc(GetClientRect,{hwnd,rect})
+    sequence seqrect = peek4u({rect,4})
+    integer scale = min(floor(seqrect[3..4]/screen_size))
+    if scale <= 0 then
+        scale = 1
+    end if
+    border = floor((seqrect[3..4] - screen_size*scale)/2)
+    if border[X] < 0 then
+        border[X] = 0
+    end if
+    if border[Y] < 0 then
+        border[Y] = 0
+    end if
+    set_scale(scale)
+end procedure
+
 -- Text caret routines --
 
 -- cursor styles:
@@ -954,20 +971,7 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         c_proc(EndPaint, {hwnd, paintstruct})
         return 0
     elsif iMsg = WM_SIZE and wParam != SIZE_MINIMIZED then
-        c_proc(GetClientRect,{hwnd,rect})
-        seqrect = peek4u({rect,4})
-        integer scale = min(floor(seqrect[3..4]/screen_size))
-        if scale <= 0 then
-            scale = 1
-        end if
-        border = floor((seqrect[3..4] - screen_size*scale)/2)
-        if border[X] < 0 then
-            border[X] = 0
-        end if
-        if border[Y] < 0 then
-            border[Y] = 0
-        end if
-        set_scale(scale)
+        rescale()
         return 0
     elsif iMsg = WM_KEYDOWN then
         if wParam = #10 then -- shift down
@@ -1272,6 +1276,12 @@ global function graphics_mode(integer m)
         last_text_color = WHITE
         last_bk_color = BLACK
         clear_screen()
+        
+        if full_screen or window_maximized(hwnd) then
+            rescale()
+        else
+            set_scale(1)
+        end if
     else
         return -1
     end if
