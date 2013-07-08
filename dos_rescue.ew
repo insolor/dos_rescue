@@ -849,6 +849,10 @@ procedure toggle_full_screen()
     set_full_screen(not full_screen)
 end procedure
 
+function window_maximized(atom hwnd)
+    return and_bits(c_func(GetWindowLong, {hwnd, GWL_STYLE}), WS_MAXIMIZE)
+end function
+
 -- Scaling --
 global integer scale = 1 -- 1 disables
 
@@ -856,12 +860,29 @@ procedure set_scale(integer x)
     if x>0 then
         scale = x
         -- resize window if needed
-        if not full_screen and not and_bits(c_func(GetWindowLong, {hwnd, GWL_STYLE}), WS_MAXIMIZE) then
+        if not full_screen and not window_maximized(hwnd) then
             update_window_size(vc[VC_XPIXELS..VC_YPIXELS]+2*border)
         end if
         -- repaint the window:
         repaint = 1
     end if
+end procedure
+
+procedure rescale()
+    c_proc(GetClientRect,{hwnd,rect})
+    sequence seqrect = peek4u({rect,4})
+    integer scale = min(floor(seqrect[3..4]/screen_size))
+    if scale <= 0 then
+        scale = 1
+    end if
+    border = floor((seqrect[3..4] - screen_size*scale)/2)
+    if border[X] < 0 then
+        border[X] = 0
+    end if
+    if border[Y] < 0 then
+        border[Y] = 0
+    end if
+    set_scale(scale)
 end procedure
 
 -- Text caret routines --
@@ -963,20 +984,7 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         c_proc(EndPaint, {hwnd, paintstruct})
         return 0
     elsif iMsg = WM_SIZE and wParam != SIZE_MINIMIZED then
-        c_proc(GetClientRect,{hwnd,rect})
-        seqrect = peek4u({rect,4})
-        integer scale = min(floor(seqrect[3..4]/screen_size))
-        if scale <= 0 then
-            scale = 1
-        end if
-        border = floor((seqrect[3..4] - screen_size*scale)/2)
-        if border[X] < 0 then
-            border[X] = 0
-        end if
-        if border[Y] < 0 then
-            border[Y] = 0
-        end if
-        set_scale(scale)
+        rescale()
         return 0
     elsif iMsg = WM_KEYDOWN then
         if wParam = #10 then -- shift down
@@ -1265,6 +1273,12 @@ global function graphics_mode(integer m)
         last_text_color = WHITE
         last_bk_color = BLACK
         clear_screen()
+        
+        if full_screen or window_maximized(hwnd) then
+            rescale()
+        else
+            set_scale(1)
+        end if
     else
         return -1
     end if
