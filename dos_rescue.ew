@@ -917,6 +917,19 @@ procedure destroy_caret(atom hwnd)
     c_proc(DestroyCaret,{})
 end procedure
 
+global procedure cursor(integer i)
+    if cursor_shape != NO_CURSOR then
+        destroy_caret(hwnd)
+    end if
+    
+    cursor_shape = i
+    
+    if hwnd and i != NO_CURSOR then
+        reshape_cursor(cursor_shape)
+        create_caret(hwnd)
+    end if
+end procedure
+
 -- Window proc --
 
 atom buff = allocate(1) -- a buffer for CharToOemBuff function
@@ -1234,26 +1247,11 @@ end procedure
 global procedure bk_color(integer color, integer cls = 1)
 -- was calling routine in graphics.e to set background color
 -- text or graphics modes - not really needed
-    sequence vc
     if hwnd then
         last_bk_color = color
-        vc = video_config()
         if cls then
             clear_screen()
         end if
-    end if
-end procedure
-
-global procedure cursor(integer i)
-    if cursor_shape != NO_CURSOR then
-        destroy_caret(hwnd)
-    end if
-    
-    cursor_shape = i
-    
-    if hwnd and i != NO_CURSOR then
-        reshape_cursor(cursor_shape)
-        create_caret(hwnd)
     end if
 end procedure
 
@@ -1270,8 +1268,7 @@ global function graphics_mode(integer m)
             init_window(hwnd)
         end if
         
-        cursor_shape = NO_CURSOR
-        destroy_caret(hwnd)
+        cursor(NO_CURSOR)
         
         last_text_color = WHITE
         last_bk_color = BLACK
@@ -1627,7 +1624,7 @@ global function save_screen(object r, sequence file_name)
     return save_bitmap({color,image}, file_name)
 end function
 
--- High-level graphics routines --
+-- Graphics primitives --
 
 global procedure ellipse(integer color, integer fill, sequence coord1, sequence coord2)
     if hwnd then
