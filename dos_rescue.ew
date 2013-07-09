@@ -732,7 +732,9 @@ procedure init_window(atom hwnd)
     columns = loc_vc[VC_COLUMNS]
     lines = loc_vc[VC_LINES]
     
-    update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS]+2*border)
+    if not (full_screen or window_maximized(hwnd)) then
+        update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS]+2*border)
+    end if
     
     screen_size = loc_vc[VC_XPIXELS..VC_YPIXELS]
     bytes_per_line = and_bits(screen_size[X]+3,-4)
