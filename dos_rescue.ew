@@ -1280,6 +1280,7 @@ global function graphics_mode(integer m)
         if full_screen or window_maximized(hwnd) then
             rescale()
         else
+            border = {0,0}
             set_scale(1)
         end if
     else
