@@ -1225,7 +1225,7 @@ end procedure
 override procedure clear_screen()
 -- override Euphoria built-in
     if hwnd then
-        clear_region(0, 0, screen_size[X], screen_size[Y])
+        clear_region(0, 0, screen_size[X]*scale, screen_size[Y]*scale)
         
         cursor_column = 1
         cursor_line = 1
