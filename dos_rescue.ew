@@ -1274,7 +1274,6 @@ global function graphics_mode(integer m)
         
         last_text_color = WHITE
         last_bk_color = BLACK
-        clear_screen()
         
         if full_screen or window_maximized(hwnd) then
             rescale()
@@ -1283,7 +1282,7 @@ global function graphics_mode(integer m)
             set_scale(1)
         end if
         
-        repaint = TRUE
+        clear_screen()
     else
         return -1
     end if
