@@ -1241,9 +1241,9 @@ global procedure sanity()
 	end if
 	sequence_ops2()
 	circularity()
-	output()
-	input()
-	testget()
+	-- output()
+	-- input()
+	-- testget()
 	conversions()
 	patterns()
 	machine_level()
@@ -1265,11 +1265,11 @@ global procedure sanity()
 
     end for
     
-    if plat = LINUX then
-	system("rm sanityio.tst", 2)
-    else
-	system("del sanityio.tst", 2)
-    end if  
+    -- if plat = LINUX then
+	-- system("rm sanityio.tst", 2)
+    -- else
+	-- system("del sanityio.tst", 2)
+    -- end if  
     save_colors = {}
     if plat = DOS32 then
       for i = 0 to v[VC_NCOLORS]-1 do
