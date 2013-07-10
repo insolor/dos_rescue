@@ -1023,8 +1023,8 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
     elsif iMsg = WM_HOTKEY then
         if wParam = hkeyFullScreen then
             toggle_full_screen()
+            return 0
         end if
-    
     elsif iMsg = WM_SETFOCUS then
         if hwnd and cursor_shape != NO_CURSOR then
             create_caret(hwnd)
