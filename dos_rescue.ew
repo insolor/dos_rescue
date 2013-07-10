@@ -668,7 +668,8 @@ function create_dib_section(atom hdc, integer width, integer height, sequence co
     return c_func(CreateDIBSection,{hdc, bitmapinfo, DIB_RGB_COLORS, ppvBits, NULL, NULL}) & peek4u(ppvBits)
 end function
 
-procedure update_window_size(sequence screen_size)
+-- Adjust window size according to the desired client area size
+procedure update_window_size(sequence new_client_size)
     -- poke4(rect, {0,0}&screen_size)
     -- c_proc(AdjustWindowRect, {rect,winstyle,0})
     -- winsize = peek4u({rect,4})
@@ -676,7 +677,7 @@ procedure update_window_size(sequence screen_size)
     sequence clientsize = peek4u({rect+8,2})
     c_proc(GetWindowRect,{hwnd,rect})
     sequence winsize = peek4u({rect,4})
-    winsize[3..4] += - winsize[1..2] - clientsize + screen_size*scale
+    winsize[3..4] += - winsize[1..2] - clientsize + new_client_size
     c_proc(SetWindowPos, hwnd & 0 & winsize & HWND_TOP)
 end procedure
 
@@ -733,7 +734,7 @@ procedure init_window(atom hwnd)
     lines = loc_vc[VC_LINES]
     
     if not (full_screen or window_maximized(hwnd)) then
-        update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS]+2*border)
+        update_window_size(loc_vc[VC_XPIXELS..VC_YPIXELS]*scale+2*border)
     end if
     
     screen_size = loc_vc[VC_XPIXELS..VC_YPIXELS]
@@ -863,7 +864,7 @@ procedure set_scale(integer x)
         scale = x
         -- resize window if needed
         if not full_screen and not window_maximized(hwnd) then
-            update_window_size(vc[VC_XPIXELS..VC_YPIXELS]+2*border)
+            update_window_size(vc[VC_XPIXELS..VC_YPIXELS]*scale+2*border)
         end if
         -- repaint the window:
         repaint = 1
