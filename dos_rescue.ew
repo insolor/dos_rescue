@@ -985,6 +985,10 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
                     c_proc(StretchBlt, hdcWindow & dest & hdcDisplay & src & SRCCOPY)
                 end if
             end if
+            -- Redraw border if necessary
+            if border[X]>0 or border[Y]>0 then
+                -- clear_border()
+            end if
         c_proc(EndPaint, {hwnd, paintstruct})
         return 0
     elsif iMsg = WM_SIZE and wParam != SIZE_MINIMIZED then
@@ -1217,11 +1221,11 @@ end procedure
 
 ------------------------------------------------------------------------------
 
-integer last_text_color, last_bk_color
+integer last_text_color, last_bk_color, last_border_color = BLACK
 
-procedure clear_region(integer x1, integer y1, integer x2, integer y2)
+procedure clear_region(integer x1, integer y1, integer x2, integer y2, integer color = last_bk_color)
     poke4(rect, {x1, y1, x2, y2})
-    c_proc(FillRect, hdcActive & rect & brushes[1+last_bk_color])
+    c_proc(FillRect, hdcActive & rect & brushes[1+color])
 end procedure
 
 override procedure clear_screen()
@@ -1241,6 +1245,12 @@ override procedure clear_screen()
     else
         eu:clear_screen()
     end if
+end procedure
+
+procedure clear_border()
+    clear_region(0, 0, screen_size[X]*scale+border[X], border[Y], RED) -- top-left part of the border area
+    
+    -- clear_region(screen_size[X]*scale+border[X],0,screen_size[X]*scale+border[X]*2,)
 end procedure
 
 global procedure text_color(integer color)
@@ -1285,6 +1295,7 @@ global function graphics_mode(integer m)
         end if
         
         clear_screen()
+        clear_border()
     else
         return -1
     end if
