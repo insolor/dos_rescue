@@ -1840,8 +1840,8 @@ end function
 
 procedure put(sequence str)
     sequence pos
-    integer index
-    integer attr
+    -- integer index
+    -- integer attr
     if cursor_line>lines then
         scroll(cursor_line-lines,1,lines)
         cursor_line = lines
@@ -1849,8 +1849,8 @@ procedure put(sequence str)
     pos = (cursor_column-1)*char_width & (cursor_line-1)*char_height
     putsxy(pos,str,last_text_color,last_bk_color)
     
-    attr = last_bk_color*#10 + and_bits(#F, last_text_color)
-    index = cursor_column*2-1
+    -- attr = last_bk_color*#10 + and_bits(#F, last_text_color)
+    -- index = cursor_column*2-1
     
     cursor_column += length(str)
 end procedure
