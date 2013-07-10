@@ -17,6 +17,7 @@ include std/graphics.e -- for scroll
 constant TRUE = 1, FALSE = 0
 constant STDIN = 0, STDOUT = 1
 constant X = 1, Y = 2
+constant X1 = 1, Y1 = 2, X2 = 3, Y2 = 4
 
 global
 function LOWORD(atom a)
@@ -676,7 +677,7 @@ procedure update_window_size(sequence new_client_size)
     sequence client_size = get_client_size(hwnd)
     c_proc(GetWindowRect,{hwnd,rect})
     sequence winsize = peek4u({rect,4})
-    winsize[3..4] += - winsize[1..2] - client_size + new_client_size
+    winsize[X2..Y2] += - winsize[X1..Y1] - client_size + new_client_size
     c_proc(SetWindowPos, hwnd & 0 & winsize & HWND_TOP)
 end procedure
 
@@ -821,7 +822,7 @@ procedure full_screen_on()
         c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, or_bits(saved_window_style[2], WS_EX_TOPMOST)})
         c_proc(GetWindowRect, {hwnd, rect})
         saved_window_pos = peek4s({rect,4})
-        saved_window_pos[3..4] -= saved_window_pos[1..2]
+        saved_window_pos[X2..Y2] -= saved_window_pos[X1..Y1]
         sequence res = get_resolution()
         full_screen = 1
         c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
@@ -972,7 +973,7 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
             seqrect = peek4u({paintstruct+rcPaint, 4})
             sequence src, dest = seqrect
             if scale < 2 then
-                src = dest[1..2]-border
+                src = dest[X1..Y1]-border
                 if active_page = display_page then
                     c_proc(BitBlt, hdcWindow & dest & hdcActive & src & SRCCOPY)
                 else
@@ -980,7 +981,7 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
                 end if
             else
                 src = dest
-                src[1..2] -= border
+                src[X1..Y1] -= border
                 src = floor(src/scale+1.0)
                 if active_page = display_page then
                     c_proc(StretchBlt, hdcWindow & dest & hdcActive & src & SRCCOPY)
@@ -990,7 +991,18 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
             end if
             -- Redraw border if necessary
             if border[X]>0 or border[Y]>0 then
-                -- clear_border()
+                if dest[Y1] < border[Y] then
+                    clear_border_top()
+                end if
+                if dest[X1] < border[X] then
+                    clear_border_left()
+                end if
+                if dest[X2] > screen_size[X]+border[X] then
+                    clear_border_right()
+                end if
+                if dest[Y2] > screen_size[Y]+border[Y] then
+                    clear_border_bottom()
+                end if
             end if
         c_proc(EndPaint, {hwnd, paintstruct})
         return 0
