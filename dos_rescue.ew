@@ -673,11 +673,10 @@ procedure update_window_size(sequence new_client_size)
     -- poke4(rect, {0,0}&screen_size)
     -- c_proc(AdjustWindowRect, {rect,winstyle,0})
     -- winsize = peek4u({rect,4})
-    c_proc(GetClientRect, {hwnd,rect})
-    sequence clientsize = peek4u({rect+8,2})
+    sequence client_size = get_client_size(hwnd)
     c_proc(GetWindowRect,{hwnd,rect})
     sequence winsize = peek4u({rect,4})
-    winsize[3..4] += - winsize[1..2] - clientsize + new_client_size
+    winsize[3..4] += - winsize[1..2] - client_size + new_client_size
     c_proc(SetWindowPos, hwnd & 0 & winsize & HWND_TOP)
 end procedure
 
@@ -871,15 +870,19 @@ procedure set_scale(integer x)
     end if
 end procedure
 
+function get_client_size(atom hwnd)
+    c_proc(GetClientRect,{hwnd,rect})
+    return peek4u({rect+2*4,2})
+end function
+
 procedure rescale()
     -- Calculate scale according to the window size
-    c_proc(GetClientRect,{hwnd,rect})
-    sequence seqrect = peek4u({rect,4})
-    integer scale = min(floor(seqrect[3..4]/screen_size))
+    sequence client_size = get_client_size(hwnd)
+    integer scale = min(floor(client_size/screen_size))
     if scale <= 0 then
         scale = 1
     end if
-    border = floor((seqrect[3..4] - screen_size*scale)/2)
+    border = floor((client_size - screen_size*scale)/2)
     if border[X] < 0 then
         border[X] = 0
     end if
@@ -1119,7 +1122,7 @@ end procedure
 object AppName
 AppName = 0
 
-function create_window(object clientsize = 0)
+function create_window(object client_size = 0)
     atom szAppName
     atom wndclass
     atom WndProcAddress
@@ -1163,8 +1166,8 @@ function create_window(object clientsize = 0)
                       WS_MAXIMIZEBOX, WS_THICKFRAME})
     
     atom width, height
-    if sequence(clientsize) then
-        poke4(rect, {0,0}&clientsize)
+    if sequence(client_size) then
+        poke4(rect, {0,0}&client_size)
         c_proc(AdjustWindowRect,{rect,winstyle,0})
         sequence seqrect = peek4s({rect,4})
         width = seqrect[3]-seqrect[1]
@@ -1223,15 +1226,20 @@ end procedure
 
 integer last_text_color, last_bk_color, last_border_color = BLACK
 
+procedure fill_rectangle(atom hdc, sequence seqrect, atom brush)
+    poke4(rect, seqrect)
+    c_proc(FillRect, hdc & rect & brush)
+end procedure
+
+-- Clears a rectangle area on the virtual screen (hdcActive)
 procedure clear_region(integer x1, integer y1, integer x2, integer y2, integer color = last_bk_color)
-    poke4(rect, {x1, y1, x2, y2})
-    c_proc(FillRect, hdcActive & rect & brushes[1+color])
+    fill_rectangle(hdcActive, {x1,y1,x2,y2}, brushes[1+color])
 end procedure
 
 override procedure clear_screen()
 -- override Euphoria built-in
     if hwnd then
-        clear_region(0, 0, screen_size[X]*scale, screen_size[Y]*scale)
+        clear_region(0, 0, screen_size[X], screen_size[Y])
         
         cursor_column = 1
         cursor_line = 1
@@ -1248,9 +1256,14 @@ override procedure clear_screen()
 end procedure
 
 procedure clear_border()
-    clear_region(0, 0, screen_size[X]*scale+border[X], border[Y], RED) -- top-left part of the border area
-    
-    -- clear_region(screen_size[X]*scale+border[X],0,screen_size[X]*scale+border[X]*2,)
+    atom brush = brushes[1+last_bk_color]
+    sequence part = { screen_size[X]*scale+border[X],
+        screen_size[Y]*scale+border[Y] }
+    sequence client_size = get_client_size(hwnd)
+    fill_rectangle(hdcWindow,{0,0,part[X],border[Y]},brush)
+    fill_rectangle(hdcWindow,{part[X],0,client_size[X],part[Y]},brush)
+    fill_rectangle(hdcWindow,{border[X],part[Y],client_size[X],client_size[Y]},brush)
+    fill_rectangle(hdcWindow,{0,border[Y],border[X],part[Y]},brush)
 end procedure
 
 global procedure text_color(integer color)
