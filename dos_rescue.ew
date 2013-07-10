@@ -871,6 +871,7 @@ procedure set_scale(integer x)
 end procedure
 
 procedure rescale()
+    -- Calculate scale according to the window size
     c_proc(GetClientRect,{hwnd,rect})
     sequence seqrect = peek4u({rect,4})
     integer scale = min(floor(seqrect[3..4]/screen_size))
