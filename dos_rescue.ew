@@ -1282,6 +1282,8 @@ global function graphics_mode(integer m)
             border = {0,0}
             set_scale(1)
         end if
+        
+        repaint = TRUE
     else
         return -1
     end if
