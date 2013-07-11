@@ -946,7 +946,7 @@ atom hkeyFullScreen
 function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
 -- callback routine to handle Window class
     sequence seqrect
-    
+    sequence client_size = get_client_size(hwnd)
     if iMsg = WM_CREATE then
         char_buff = {}
         key_buff = {}
@@ -998,10 +998,10 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
                     clear_border_left()
                 end if
                 if dest[X2] > screen_size[X]+border[X] then
-                    clear_border_right()
+                    clear_border_right(client_size)
                 end if
                 if dest[Y2] > screen_size[Y]+border[Y] then
-                    clear_border_bottom()
+                    clear_border_bottom(client_size)
                 end if
             end if
         c_proc(EndPaint, {hwnd, paintstruct})
@@ -1267,15 +1267,36 @@ override procedure clear_screen()
     end if
 end procedure
 
+procedure clear_border_top()
+    fill_rectangle(hdcWindow,
+        {0,0,screen_size[X]*scale+border[X],border[Y]},
+        brushes[1+last_bk_color])
+end procedure
+
+procedure clear_border_right(sequence client_size)
+    fill_rectangle(hdcWindow,
+        {screen_size[X]*scale+border[X],0,client_size[X],screen_size[Y]*scale+border[Y]},
+        brushes[1+last_bk_color])
+end procedure
+
+procedure clear_border_bottom(sequence client_size)
+    fill_rectangle(hdcWindow,
+        {border[X],screen_size[Y]*scale+border[Y],client_size[X],client_size[Y]},
+        brushes[1+last_bk_color])
+end procedure
+
+procedure clear_border_left()
+    fill_rectangle(hdcWindow,
+        {0,border[Y],border[X],screen_size[Y]*scale+border[Y]},
+        brushes[1+last_bk_color])
+end procedure
+
 procedure clear_border()
-    atom brush = brushes[1+last_bk_color]
-    sequence part = { screen_size[X]*scale+border[X],
-        screen_size[Y]*scale+border[Y] }
     sequence client_size = get_client_size(hwnd)
-    fill_rectangle(hdcWindow,{0,0,part[X],border[Y]},brush)
-    fill_rectangle(hdcWindow,{part[X],0,client_size[X],part[Y]},brush)
-    fill_rectangle(hdcWindow,{border[X],part[Y],client_size[X],client_size[Y]},brush)
-    fill_rectangle(hdcWindow,{0,border[Y],border[X],part[Y]},brush)
+    clear_border_top()
+    clear_border_right(client_size)
+    clear_border_bottom(client_size)
+    clear_border_left()
 end procedure
 
 global procedure text_color(integer color)
