@@ -160,7 +160,7 @@ function set_coord(sequence xyz)
 	    v_magnifier * (origin_y - xyz[3] + k)}
 end function
 
-function plot(atom x, atom y, integer func_no, sequence prev_coord = {})
+function plot(atom x, atom y, integer func_no, sequence prev_coord = {}, integer draw = 1)
 -- plot the point according to 3-D perspective
     atom z, col
     sequence coord
@@ -170,15 +170,17 @@ function plot(atom x, atom y, integer func_no, sequence prev_coord = {})
     note_extreme(coord, z)
     -- select color by quadrant
     col = (z >= 0) * 8 + (x >= 0) * 2 + (y >= 0) + 1
-    if length(prev_coord) = 0 then
-	pixel(col, coord)
-    else
-	draw_line(col, {prev_coord, coord})
+    if draw then
+        if length(prev_coord) = 0 then
+            pixel(col, coord)
+        else
+            draw_line(col, {prev_coord, coord})
+        end if
     end if
     return coord
 end function
 
-function plot_a_function(integer func_no, integer fine=1, integer grid_width)
+function plot_a_function(integer func_no, integer fine=1, integer grid_width, integer draw = 1)
 -- generate 3d plotted graph
 	sequence prev_coord
     for x = x_min to x_max by grid_width * x_inc do
@@ -187,7 +189,7 @@ function plot_a_function(integer func_no, integer fine=1, integer grid_width)
 	end if
 	prev_coord = {}
 	for y = y_min to y_max by fine * y_inc do
-	    prev_coord = plot(x, y, func_no, prev_coord)
+	    prev_coord = plot(x, y, func_no, prev_coord, draw)
 	end for
     end for
 
@@ -197,7 +199,7 @@ function plot_a_function(integer func_no, integer fine=1, integer grid_width)
 	end if
 	prev_coord = {}
 	for x = x_min to x_max by fine * x_inc do
-	    prev_coord = plot(x, y, func_no, prev_coord)
+	    prev_coord = plot(x, y, func_no, prev_coord, draw)
 	end for
     end for
     return {xc_max,yc_max,xc_min,yc_min}
@@ -216,7 +218,7 @@ procedure plot3d()
 	-- do a quick trial run to establish range of values
 	integer grid_width = 20
 	integer fine = 4
-	if sequence(plot_a_function(funcs[func_no], fine, grid_width)) then
+	if sequence(plot_a_function(funcs[func_no], fine, grid_width, 0)) then
 	    clear_screen()
 	    box()
 	    -- make next one fit screen better
