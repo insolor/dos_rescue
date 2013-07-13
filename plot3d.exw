@@ -40,7 +40,8 @@ origin_y = 150
 
 integer x_res, y_res
 
-atom h_magnifier, v_magnifier
+-- atom h_magnifier, v_magnifier
+sequence magnifier
 
 function abs(atom x)
     if x < 0 then
@@ -112,8 +113,7 @@ sequence funcs = {
 
 procedure set_range()
     -- magnification factors
-    h_magnifier = 1.0
-    v_magnifier = 1.0
+    magnifier = { 1.0, 1.0 }
 
     -- extreme values
     xc_min = 1e307
@@ -158,12 +158,12 @@ function set_coord(sequence xyz)
     atom k
 
     k = (xyz[1] - x_min)/x_inc * c
-    return {h_magnifier * (origin_x + (xyz[2] - y_min)/y_inc - k),
-	    v_magnifier * (origin_y - xyz[3] + k)}
+    return magnifier * {origin_x + (xyz[2] - y_min)/y_inc - k,
+	    origin_y - xyz[3] + k}
 end function
 
 function set_coord_isometric(sequence xyz)
-    return {h_magnifier, v_magnifier} *
+    return magnifier *
         {origin_x + (xyz[1] - x_min)/x_inc * cos60 + (xyz[2] - y_min)/y_inc * cos60,
         origin_y - xyz[3] - (xyz[1] - x_min)/x_inc * sin60 + (xyz[2] - y_min)/y_inc * sin60}
 end function
@@ -231,8 +231,8 @@ procedure plot3d()
 	    clear_screen()
 	    box()
 	    -- make next one fit screen better
-	    v_magnifier = (y_res - 1) / (yc_max - yc_min)
-	    h_magnifier = (x_res - 1) / (xc_max - xc_min)
+	    magnifier = { (x_res - 1) / (xc_max - xc_min),
+                          (y_res - 1) / (yc_max - yc_min) }
 	    origin_x -= xc_min
 	    origin_y -= yc_min
 	    grid_width = 20
