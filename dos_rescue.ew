@@ -812,20 +812,24 @@ full_screen = 0
 sequence saved_window_pos, saved_window_style
 
 procedure full_screen_on()
-    if hwnd and not full_screen then
-        saved_window_style = {
-            c_func(GetWindowLong, {hwnd, GWL_STYLE}),
-            c_func(GetWindowLong, {hwnd, GWL_EXSTYLE})
-        }
-        
-        c_proc(SetWindowLong, {hwnd, GWL_STYLE, WS_POPUP+WS_VISIBLE}) -- make borderless window
-        c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, or_bits(saved_window_style[2], WS_EX_TOPMOST)})
-        c_proc(GetWindowRect, {hwnd, rect})
-        saved_window_pos = peek4s({rect,4})
-        saved_window_pos[X2..Y2] -= saved_window_pos[X1..Y1]
-        sequence res = get_resolution()
-        full_screen = 1
-        c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
+    if not full_screen then
+        if hwnd then
+            saved_window_style = {
+                c_func(GetWindowLong, {hwnd, GWL_STYLE}),
+                c_func(GetWindowLong, {hwnd, GWL_EXSTYLE})
+            }
+            
+            c_proc(SetWindowLong, {hwnd, GWL_STYLE, WS_POPUP+WS_VISIBLE}) -- make borderless window
+            c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, or_bits(saved_window_style[2], WS_EX_TOPMOST)})
+            c_proc(GetWindowRect, {hwnd, rect})
+            saved_window_pos = peek4s({rect,4})
+            saved_window_pos[X2..Y2] -= saved_window_pos[X1..Y1]
+            sequence res = get_resolution()
+            full_screen = 1
+            c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
+        else
+            -- full_screen = 1
+        end if
     end if
 end procedure
 
