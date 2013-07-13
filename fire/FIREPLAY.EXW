@@ -238,9 +238,10 @@ xmin=(320-par[5][3])/2
 xmax=xmin+par[5][3]-1
 buff=repeat(repeat(0,xmax-xmin+1),ymax-ymin+1)
 
+junk = graphics_mode(18)
+set_full_screen(1)
 introduction()
 junk = graphics_mode(19)
--- set_full_screen(1)
 set_palette()
 
 rect(24,1,{0,0},{319,199}) -- clear screen using one of smoke colors
