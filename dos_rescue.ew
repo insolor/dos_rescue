@@ -811,44 +811,44 @@ full_screen = 0
 
 sequence saved_window_pos, saved_window_style
 
+-- don't make it public
 procedure full_screen_on()
-    if not full_screen then
-        if hwnd then
-            saved_window_style = {
-                c_func(GetWindowLong, {hwnd, GWL_STYLE}),
-                c_func(GetWindowLong, {hwnd, GWL_EXSTYLE})
-            }
-            
-            c_proc(SetWindowLong, {hwnd, GWL_STYLE, WS_POPUP+WS_VISIBLE}) -- make borderless window
-            c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, or_bits(saved_window_style[2], WS_EX_TOPMOST)})
-            c_proc(GetWindowRect, {hwnd, rect})
-            saved_window_pos = peek4s({rect,4})
-            saved_window_pos[X2..Y2] -= saved_window_pos[X1..Y1]
-            sequence res = get_resolution()
-            full_screen = 1
-            c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
-        else
-            -- full_screen = 1
-        end if
-    end if
+    saved_window_style = {
+        c_func(GetWindowLong, {hwnd, GWL_STYLE}),
+        c_func(GetWindowLong, {hwnd, GWL_EXSTYLE})
+    }
+    
+    c_proc(SetWindowLong, {hwnd, GWL_STYLE, WS_POPUP+WS_VISIBLE}) -- make borderless window
+    c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, or_bits(saved_window_style[2], WS_EX_TOPMOST)})
+    c_proc(GetWindowRect, {hwnd, rect})
+    saved_window_pos = peek4s({rect,4})
+    saved_window_pos[X2..Y2] -= saved_window_pos[X1..Y1]
+    sequence res = get_resolution()
+    full_screen = 1
+    c_proc(SetWindowPos, hwnd & 0 & {0,0} & res & HWND_TOP )
 end procedure
 
+-- don't make it public
 procedure full_screen_off()
-    if hwnd and full_screen then
-        -- restore window style and position
-        c_proc(SetWindowLong, {hwnd, GWL_STYLE, saved_window_style[1]})
-        c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, saved_window_style[2]})
-        full_screen = 0
-        c_proc(SetWindowPos, hwnd & 0 & saved_window_pos & HWND_TOP )
-    end if
+    -- restore window style and position
+    c_proc(SetWindowLong, {hwnd, GWL_STYLE, saved_window_style[1]})
+    c_proc(SetWindowLong, {hwnd, GWL_EXSTYLE, saved_window_style[2]})
+    full_screen = 0
+    c_proc(SetWindowPos, hwnd & 0 & saved_window_pos & HWND_TOP )
 end procedure
 
 global
 procedure set_full_screen(integer on_off)
-    if on_off then
-        full_screen_on()
-    else
-        full_screen_off()
+    if full_screen != on_off then
+        if hwnd then
+            if on_off then
+                full_screen_on()
+            else
+                full_screen_off()
+            end if
+        else
+            full_screen = on_off
+        end if
     end if
 end procedure
 
@@ -956,10 +956,6 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
         key_buff = {}
         
         init_window(hwnd)
-        
-        if full_screen then
-            full_screen_on()
-        end if
         
         -- Register Alt+Enter hotkey
         hkeyFullScreen = c_func(GlobalAddAtom,{allocate_string("AltEnter")})
