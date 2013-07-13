@@ -986,7 +986,17 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
             else
                 src = dest
                 src[X1..Y1] -= border
-                src = floor(src/scale+1.0)
+                if src[X1] < 0 then
+                    src[X2] += src[X1]
+                    src[X1] = 0
+                end if
+                if src[Y1] < 0 then
+                    src[Y2] += src[Y1]
+                    src[Y1] = 0
+                end if
+                src = floor(src/scale)
+                dest = src*scale
+                dest[X1..Y1]+=border
                 if active_page = display_page then
                     c_proc(StretchBlt, hdcWindow & dest & hdcActive & src & SRCCOPY)
                 else
@@ -995,16 +1005,16 @@ function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
             end if
             -- Redraw border if necessary
             if border[X]>0 or border[Y]>0 then
-                if dest[Y1] < border[Y] then
+                if seqrect[Y1] < border[Y] then
                     clear_border_top()
                 end if
-                if dest[X1] < border[X] then
-                    clear_border_left()
+                if seqrect[X1] < border[X] then
+                    clear_border_left(client_size)
                 end if
-                if dest[X2] > screen_size[X]+border[X] then
+                if seqrect[X2] > screen_size[X]+border[X] then
                     clear_border_right(client_size)
                 end if
-                if dest[Y2] > screen_size[Y]+border[Y] then
+                if seqrect[Y2] > screen_size[Y]+border[Y] then
                     clear_border_bottom(client_size)
                 end if
             end if
@@ -1289,9 +1299,9 @@ procedure clear_border_bottom(sequence client_size)
         brushes[1+last_bk_color])
 end procedure
 
-procedure clear_border_left()
+procedure clear_border_left(sequence client_size)
     fill_rectangle(hdcWindow,
-        {0,border[Y],border[X],screen_size[Y]*scale+border[Y]},
+        {0,border[Y],border[X],client_size[Y]},
         brushes[1+last_bk_color])
 end procedure
 
@@ -1300,7 +1310,7 @@ procedure clear_border()
     clear_border_top()
     clear_border_right(client_size)
     clear_border_bottom(client_size)
-    clear_border_left()
+    clear_border_left(client_size)
 end procedure
 
 global procedure text_color(integer color)
