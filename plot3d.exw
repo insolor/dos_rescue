@@ -25,6 +25,8 @@ include machine.e
 use_vesa(1) -- FOR ATI cards
 
 constant c = sqrt(2.0) / 2
+constant PI = 3.14
+constant sin60 = sin(2*PI/3), cos60 = cos(2*PI/3)
 constant SCREEN = 1
 
 atom x_min, x_max, x_inc
@@ -50,62 +52,62 @@ end function
 
 -- compute a function z of two variables x and y
 function func1(atom x, atom y)
-	return 100*x*x + 100*y*y - 50
+    return 100*x*x + 100*y*y - 50
 end function
 
 function func2(atom x, atom y)
-	return 200*x*x*x - 200*y*y*y
+    return 200*x*x*x - 200*y*y*y
 end function
 
 function func3(atom x, atom y)
-	return 50 * cos(8*x*y)
+    return 50 * cos(8*x*y)
 end function
 
 function func4(atom x, atom y)
-	return 50 * cos(8*(x+y))
+    return 50 * cos(8*(x+y))
 end function
 
 function func5(atom x, atom y)
-	atom z, w
-	z = 50 * cos(50 * sqrt(x*x+y*y))
-	if z >= -0.01 then
-	    if (x < 0 and y < 0) or (x > 0 and y > 0) then
-		return z / 10
-	    else
-		return z
-	    end if
-	else
-	    return -0.01
-	end if
+    atom z, w
+    z = 50 * cos(50 * sqrt(x*x+y*y))
+    if z >= -0.01 then
+        if (x < 0 and y < 0) or (x > 0 and y > 0) then
+            return z / 10
+        else
+            return z
+        end if
+    else
+        return -0.01
+    end if
 end function
 
 function func6(atom x, atom y)
-	sequence pq, pr, ps -- points in the plane
-	atom dq, dr, ds     -- distance from p
-	atom z, w
-	pq = {.6, -.4}
-	pr = {-.6, 0}
-	ps = {.5, +.5}
-	dq = sqrt((x-pq[1]) * (x-pq[1]) + (y-pq[2]) * (y-pq[2]))
-	dr = sqrt((x-pr[1]) * (x-pr[1]) + (y-pr[2]) * (y-pr[2]))
-	ds = sqrt((x-ps[1]) * (x-ps[1]) + (y-ps[2]) * (y-ps[2]))
-	z = -25 * cos(ds*15)/(0.1 + ds*sqrt(ds)) +
-	     75 * cos(dq*3) /(0.1 + dq*sqrt(dq))
-	if x < 0 then
-	    w = 60 * cos(9 * dr)
-	    if w < 0 then
-		w = 0
-	    else
-		w *= 2 * sqrt(-x)
-	    end if
-	    z += w
-	end if
-	return z
+    sequence pq, pr, ps -- points in the plane
+    atom dq, dr, ds     -- distance from p
+    atom z, w
+    pq = {.6, -.4}
+    pr = {-.6, 0}
+    ps = {.5, +.5}
+    dq = sqrt((x-pq[1]) * (x-pq[1]) + (y-pq[2]) * (y-pq[2]))
+    dr = sqrt((x-pr[1]) * (x-pr[1]) + (y-pr[2]) * (y-pr[2]))
+    ds = sqrt((x-ps[1]) * (x-ps[1]) + (y-ps[2]) * (y-ps[2]))
+    z = -25 * cos(ds*15)/(0.1 + ds*sqrt(ds)) +
+         75 * cos(dq*3) /(0.1 + dq*sqrt(dq))
+    if x < 0 then
+        w = 60 * cos(9 * dr)
+        if w < 0 then
+            w = 0
+        else
+            w *= 2 * sqrt(-x)
+        end if
+        z += w
+    end if
+    return z
 end function
 
 sequence funcs = {
-	routine_id("func1"), routine_id("func2"), routine_id("func3"),
-	routine_id("func4"), routine_id("func5"), routine_id("func6")
+    routine_id("func1"), routine_id("func2"), routine_id("func3"),
+    routine_id("func4"), routine_id("func5"), routine_id("func6")
 }
 
 procedure set_range()
@@ -160,13 +162,20 @@ function set_coord(sequence xyz)
 	    v_magnifier * (origin_y - xyz[3] + k)}
 end function
 
+function set_coord_isometric(sequence xyz)
+    return {h_magnifier, v_magnifier} *
+        {origin_x + (xyz[1] - x_min)/x_inc * cos60 + (xyz[2] - y_min)/y_inc * cos60,
+        origin_y - xyz[3] - (xyz[1] - x_min)/x_inc * sin60 + (xyz[2] - y_min)/y_inc * sin60}
+end function
+
 function plot(atom x, atom y, integer func_no, sequence prev_coord = {}, integer draw = 1)
 -- plot the point according to 3-D perspective
     atom z, col
     sequence coord
 
     z = call_func(func_no, {x, y})
-    coord = set_coord({x, y, z})
+    -- coord = set_coord({x, y, z})
+    coord = set_coord_isometric({x, y, z})
     note_extreme(coord, z)
     -- select color by quadrant
     col = (z >= 0) * 8 + (x >= 0) * 2 + (y >= 0) + 1
