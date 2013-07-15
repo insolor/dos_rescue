@@ -131,7 +131,7 @@ procedure set_range()
 
    -- calculate some derived values:
     x_inc = (x_max - x_min) / x_res
-    y_inc = (y_max - y_min) / y_res
+    y_inc = (y_max - y_min) / x_res
 end procedure
 
 procedure note_extreme(sequence coord, atom z)
