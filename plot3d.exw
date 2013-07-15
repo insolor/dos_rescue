@@ -192,7 +192,7 @@ end function
 function plot_a_function(integer func_no, integer fine=1, integer grid_width, integer draw = 1)
 -- generate 3d plotted graph
 	sequence prev_coord
-    for x = x_min to x_max by grid_width * x_inc do
+    for x = x_min to x_max+x_inc by grid_width * x_inc do
 	if get_key() != -1 then
 	    return 0
 	end if
@@ -202,7 +202,7 @@ function plot_a_function(integer func_no, integer fine=1, integer grid_width, in
 	end for
     end for
 
-    for y = y_min to y_max by grid_width * y_inc do
+    for y = y_min to y_max+y_inc by grid_width * y_inc do
 	if get_key() != -1 then
 	    return 0
 	end if
