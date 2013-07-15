@@ -35,8 +35,6 @@ atom z_min, z_max
 atom xc_min, xc_max, yc_min, yc_max
 
 atom origin_x, origin_y
-origin_x = 400
-origin_y = 150
 
 integer x_res, y_res
 
@@ -221,8 +219,7 @@ end procedure
 
 procedure plot3d()
 -- main program
-    integer func_no = 1
-    while func_no <= length(funcs) do
+    for func_no = 1 to length(funcs) do
 	set_range()
 	-- do a quick trial run to establish range of values
 	integer grid_width = 20
@@ -248,9 +245,8 @@ procedure plot3d()
 		end while
 	    end if
 	end if
-	func_no += 1
 	clear_screen()
-    end while
+    end for
 end procedure
 
 sequence config
@@ -260,6 +256,8 @@ if select_mode(GRAPHICS_MODE) then
     config = video_config()
     x_res = config[VC_XPIXELS]
     y_res = config[VC_YPIXELS]
+    origin_x = floor(x_res/2)
+    origin_y = floor(y_res/2)
     plot3d()
     if graphics_mode(-1) then
     end if
