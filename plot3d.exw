@@ -28,15 +28,17 @@ constant c = sqrt(2.0) / 2
 constant PI = 3.14
 constant sin60 = sin(2*PI/3), cos60 = cos(2*PI/3)
 constant SCREEN = 1
+constant X = 1, Y = 2
 
 atom x_min, x_max, x_inc
 atom y_min, y_max, y_inc
 atom z_min, z_max
 atom xc_min, xc_max, yc_min, yc_max
 
-atom origin_x, origin_y
+sequence origin
 
-integer x_res, y_res
+-- integer x_res, y_res
+sequence resolution
 
 -- atom h_magnifier, v_magnifier
 sequence magnifier
@@ -128,8 +130,8 @@ procedure set_range()
     y_max = +1
 
    -- calculate some derived values:
-    x_inc = (x_max - x_min) / x_res
-    y_inc = (y_max - y_min) / x_res
+    x_inc = (x_max - x_min) / resolution[X]
+    y_inc = (y_max - y_min) / resolution[X]
 end procedure
 
 procedure note_extreme(sequence coord, atom z)
@@ -154,16 +156,14 @@ end procedure
 function set_coord(sequence xyz)
 -- return the coordinates to plot, given the x, y and z values
     atom k
-
     k = (xyz[1] - x_min)/x_inc * c
-    return magnifier * {origin_x + (xyz[2] - y_min)/y_inc - k,
-	    origin_y - xyz[3] + k}
+    return magnifier * (origin + {(xyz[2] - y_min)/y_inc - k, -xyz[3] + k})
 end function
 
 function set_coord_isometric(sequence xyz)
-    return magnifier *
-        {origin_x + (xyz[1] - x_min)/x_inc * cos60 + (xyz[2] - y_min)/y_inc * cos60,
-        origin_y - xyz[3] - (xyz[1] - x_min)/x_inc * sin60 + (xyz[2] - y_min)/y_inc * sin60}
+    return magnifier * (origin + 
+        {(xyz[1] - x_min)/x_inc * cos60 + (xyz[2] - y_min)/y_inc * cos60,
+         -xyz[3] - (xyz[1] - x_min)/x_inc * sin60 + (xyz[2] - y_min)/y_inc * sin60})
 end function
 
 function plot(atom x, atom y, integer func_no, sequence prev_coord = {}, integer draw = 1)
@@ -214,7 +214,7 @@ end function
 
 procedure box()
 -- draw a box around the outside of edge of the screen
-    polygon(5, 0, {{0, 0}, {0, y_res-1}, {x_res-1, y_res-1}, {x_res-1, 0}})
+    polygon(5, 0, {{0, 0}, {0, resolution[Y]-1}, resolution-1, {resolution[X]-1, 0}})
 end procedure
 
 procedure plot3d()
@@ -228,10 +228,9 @@ procedure plot3d()
 	    clear_screen()
 	    box()
 	    -- make next one fit screen better
-	    magnifier = { (x_res - 1) / (xc_max - xc_min),
-                          (y_res - 1) / (yc_max - yc_min) }
-	    origin_x -= xc_min
-	    origin_y -= yc_min
+	    magnifier = { (resolution[X] - 1) / (xc_max - xc_min),
+                          (resolution[Y] - 1) / (yc_max - yc_min) }
+	    origin -= { xc_min, yc_min }
 	    grid_width = 20
 	    fine = 1
 	    if sequence(plot_a_function(funcs[func_no], fine, grid_width)) then
@@ -254,10 +253,8 @@ sequence config
 -- execution starts here:
 if select_mode(GRAPHICS_MODE) then
     config = video_config()
-    x_res = config[VC_XPIXELS]
-    y_res = config[VC_YPIXELS]
-    origin_x = floor(x_res/2)
-    origin_y = floor(y_res/2)
+    resolution = config[VC_XPIXELS..VC_YPIXELS]
+    origin = floor(resolution/2)
     plot3d()
     if graphics_mode(-1) then
     end if
