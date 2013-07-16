@@ -123,6 +123,8 @@ position(12,14)
 puts(1,"VIVA EUPHORIA")
  
 burn(101,82,210,100)
+clear_screen()
+
 burn_text(15,13,YELLOW,"HAPPY NEW YEAR")
 
 set_full_screen(0)
