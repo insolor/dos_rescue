@@ -56,12 +56,10 @@ procedure burn(integer x1, integer y1, integer x2, integer y2)
                            -- pixel - decrease for a faster burn and vice versa
    csp=repeat(50,cols)     -- current seed (vertical) position - for a delayed
                            -- burn change to anything between 0 and 50
-   -- a=#A0000+320*ymin+x1-1  -- address of top left corner fire buffer
-   a=320*ymin+x1-1  -- #A0000 removed for poke_pixel()
  
    -- read the contents of the box into the buffer
    for r = 51 to rows-2 do
-      buff[r]=peek_pixel({a+320*(r-1),cols})
+      buff[r]=get_pixel({x1,ymin+r,cols})
    end for
  
    while not finished do
@@ -96,7 +94,7 @@ procedure burn(integer x1, integer y1, integer x2, integer y2)
  
       -- show buffer
       for r = 1 to rows-2 do
-         poke_pixel(a+320*(r-1),buff[r])
+         pixel(buff[r],{x1,ymin+r})
       end for
       sleep(0.02)
    end while
