@@ -26,28 +26,28 @@ procedure gstereo()
     
     image = {}
     while 1 do
-	input = gets(in_file)
-	if atom(input) then
-	    exit
-	end if
-	image = append(image, repeat(' ', DEPTH) & input)
+        input = gets(in_file)
+        if atom(input) then
+            exit
+        end if
+        image = append(image, repeat(' ', DEPTH) & input)
     end while
     w = DEPTH * xpixels_per_char
     for y = 0 to (length(image)-1)*ypixels_per_char do
-	line = image[floor(y/ypixels_per_char+1)]
-	row = repeat(0, (length(image[1])-1)*xpixels_per_char)
-	row[1..w] = rand(repeat(vc[VC_NCOLORS], w))-1
-	for x = w + 1 to length(row) do
-	    height = line[x/xpixels_per_char+1]
-	    index = x - w
-	    if height >= '0' then
-		if height <= '9' then
-		    index += (height - '0') * xpixels_per_char
-		end if
-	    end if  
-	    row[x] = row[index]
-	end for
-	pixel(row, {0, y})
+        line = image[floor(y/ypixels_per_char+1)]
+        row = repeat(0, (length(image[1])-1)*xpixels_per_char)
+        row[1..w] = rand(repeat(vc[VC_NCOLORS], w))-1
+        for x = w + 1 to length(row) do
+            height = line[x/xpixels_per_char+1]
+            index = x - w
+            if height >= '0' then
+                if height <= '9' then
+                    index += (height - '0') * xpixels_per_char
+                end if
+            end if  
+            row[x] = row[index]
+        end for
+        pixel(row, {0, y})
     end for
 end procedure
 

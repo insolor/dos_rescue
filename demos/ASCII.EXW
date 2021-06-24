@@ -1,5 +1,5 @@
-	-- Display ASCII / code page chart
-	-- in 50 lines-per-screen mode  
+        -- Display ASCII / code page chart
+        -- in 50 lines-per-screen mode  
 
 -- include graphics.e
 include dos_rescue.ew
@@ -12,27 +12,27 @@ end if
 text_color(WHITE)
 for i = 0 to 255 do
     if remainder(i, 8) = 0 then 
-	puts(SCREEN, '\n')
-	-- if i = 128 and platform() = LINUX then
-	    -- if getc(0) then
-	    -- end if
-	-- end if
+        puts(SCREEN, '\n')
+        -- if i = 128 and platform() = LINUX then
+            -- if getc(0) then
+            -- end if
+        -- end if
     end if
     if remainder(i, 32) = 0 then
-	puts(SCREEN, '\n')
+        puts(SCREEN, '\n')
     end if
     printf(SCREEN, "%3d: ", i)
     if i = 0 then
-	puts(SCREEN, "NUL ")
+        puts(SCREEN, "NUL ")
     elsif i = 9 then
-	puts(SCREEN, "TAB ")
+        puts(SCREEN, "TAB ")
     elsif i = 10 then
-	puts(SCREEN, "LF  ")
+        puts(SCREEN, "LF  ")
     elsif i = 13 then
-	puts(SCREEN, "CR  ")
+        puts(SCREEN, "CR  ")
     else
-	puts(SCREEN, i)
-	puts(SCREEN, "   ")
+        puts(SCREEN, i)
+        puts(SCREEN, "   ")
     end if
 end for
 

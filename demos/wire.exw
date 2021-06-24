@@ -1,6 +1,6 @@
-		----------------------------
-		-- 3-D Wire Frame Picture --
-		----------------------------
+                ----------------------------
+                -- 3-D Wire Frame Picture --
+                ----------------------------
 -- Hit space bar to freeze/restart the picture.
 -- Any other key to quit.
 
@@ -45,28 +45,28 @@ function product(sequence factor)
 
     a = factor[1]
     for f = 2 to length(factor) do
-	b = factor[f]
-	if atom(a[1]) then
-	    -- a is a vector
-	    c = repeat(0, 4)
-	    for j = 1 to 4 do
-		c[j] = a[1] * b[1][j] +
-		       a[2] * b[2][j] +
-		       a[3] * b[3][j] +
-		       a[4] * b[4][j]
-	    end for
-	else
-	    -- a is a matrix
-	    c = repeat(repeat(0, 4), 4)
-	    for i = 1 to 4 do
-		for j = 1 to 4 do
-		    for k = 1 to 4 do
-			c[i][j] += a[i][k] * b[k][j]
-		    end for
-		end for
-	    end for
-	end if
-	a = c
+        b = factor[f]
+        if atom(a[1]) then
+            -- a is a vector
+            c = repeat(0, 4)
+            for j = 1 to 4 do
+                c[j] = a[1] * b[1][j] +
+                       a[2] * b[2][j] +
+                       a[3] * b[3][j] +
+                       a[4] * b[4][j]
+            end for
+        else
+            -- a is a matrix
+            c = repeat(repeat(0, 4), 4)
+            for i = 1 to 4 do
+                for j = 1 to 4 do
+                    for k = 1 to 4 do
+                        c[i][j] += a[i][k] * b[k][j]
+                    end for
+                end for
+            end for
+        end if
+        a = c
     end for
     return c
 end function
@@ -76,14 +76,14 @@ sequence vc -- video configuration
 procedure display(sequence old_coords, sequence coords)
 -- erase the old lines, draw the new ones
     for i = 1 to length(old_coords) do
-	draw_line(BLACK, old_coords[i][1..2])
+        draw_line(BLACK, old_coords[i][1..2])
     end for
     for i = 1 to length(coords) do
-	if vc[VC_COLOR] then
-	    draw_line(coords[i][3], coords[i][1..2])
-	else
-	    draw_line(ANY_MODE_WHITE, coords[i][1..2])
-	end if
+        if vc[VC_COLOR] then
+            draw_line(coords[i][3], coords[i][1..2])
+        else
+            draw_line(ANY_MODE_WHITE, coords[i][1..2])
+        end if
     end for
 end procedure
 
@@ -94,37 +94,37 @@ function view(point view_point)
 
     -- change origin
     t1 = {{1, 0, 0, 0},
-	  {0, 1, 0, 0},
-	  {0, 0, 1, 0},
-	  -view_point & 1}
+          {0, 1, 0, 0},
+          {0, 0, 1, 0},
+          -view_point & 1}
 
     -- get left-handed coordinate system
     t2 = {{-1, 0,  0, 0},
-	  { 0, 0, -1, 0},
-	  { 0, 1,  0, 0},
-	  { 0, 0,  0, 1}}
+          { 0, 0, -1, 0},
+          { 0, 1,  0, 0},
+          { 0, 0,  0, 1}}
 
     -- rotate so Ze points properly
     hyp = sqrt(view_point[1] * view_point[1] + view_point[2] * view_point[2])
     sin_theta = view_point[1] / hyp
     cos_theta = view_point[2] / hyp
     t3 = {{cos_theta, 0, sin_theta, 0},
-	  {        0, 1,         0, 0},
-	  {-sin_theta,0, cos_theta, 0},
-	  {        0, 0,         0, 1}}
+          {        0, 1,         0, 0},
+          {-sin_theta,0, cos_theta, 0},
+          {        0, 0,         0, 1}}
 
     -- rotate so Ze points at the origin (0, 0, 0)
     t4 = {{1, 0, 0, 0},
-	  {0, cos_theta, -sin_theta, 0},
-	  {0, sin_theta, cos_theta, 0},
-	  {0, 0, 0, 1}}
+          {0, cos_theta, -sin_theta, 0},
+          {0, sin_theta, cos_theta, 0},
+          {0, 0, 0, 1}}
 
     a_b = 2
 
     n = {{a_b, 0, 0, 0},
-	 {0, a_b, 0, 0},
-	 {0, 0, 1, 0},
-	 {0, 0, 0, 1}}
+         {0, a_b, 0, 0},
+         {0, 0, 1, 0},
+         {0, 0, 0, 1}}
 
     return product({t1, t2, t3, t4, n})
 end function
@@ -139,13 +139,13 @@ function new_coords(sequence overall, sequence shape)
     y2 = vc[VC_YPIXELS]/2
     screen_coords = repeat({0, 0, 0}, length(shape))
     for i = 1 to length(shape) do
-	for j = 1 to 2  do
-	    p = shape[i][j]
-	    final = product({p & 1, overall})
-	    screen_coords[i][j] = {x2*(final[X]/final[Z]+1),
-				   y2*(final[Y]/final[Z]+1)}
-	end for
-	screen_coords[i][3] = shape[i][3]
+        for j = 1 to 2  do
+            p = shape[i][j]
+            final = product({p & 1, overall})
+            screen_coords[i][j] = {x2*(final[X]/final[Z]+1),
+                                   y2*(final[Y]/final[Z]+1)}
+        end for
+        screen_coords[i][3] = shape[i][3]
     end for
     return screen_coords
 end function
@@ -153,36 +153,36 @@ end function
 function x_rotate(point p)
 -- compute x rotation of a point
     return {p[X],
-	    p[Y] * cos_angle + p[Z] * sin_angle,
-	    p[Z] * cos_angle - p[Y] * sin_angle}
+            p[Y] * cos_angle + p[Z] * sin_angle,
+            p[Z] * cos_angle - p[Y] * sin_angle}
 end function
 
 function y_rotate(point p)
 -- compute y rotation of a point
     return {p[X] * cos_angle - p[Z] * sin_angle,
-	    p[Y],
-	    p[X] * sin_angle + p[Z] * cos_angle}
+            p[Y],
+            p[X] * sin_angle + p[Z] * cos_angle}
 end function
 
 function z_rotate(point p)
 -- compute z rotation matrix
     return {p[X] * cos_angle + p[Y] * sin_angle,
-	    p[Y] * cos_angle - p[X] * sin_angle,
-	    p[Z]}
+            p[Y] * cos_angle - p[X] * sin_angle,
+            p[Z]}
 end function
 
 function compute_rotate(integer axis, sequence shape)
 -- rotate a shape
     for i = 1 to length(shape) do
-	for j = 1 to 2 do
-	    if axis = X then
-		shape[i][j] = x_rotate(shape[i][j])
-	    elsif axis = Y then
-		shape[i][j] = y_rotate(shape[i][j])
-	    else
-		shape[i][j] = z_rotate(shape[i][j])
-	    end if
-	end for
+        for j = 1 to 2 do
+            if axis = X then
+                shape[i][j] = x_rotate(shape[i][j])
+            elsif axis = Y then
+                shape[i][j] = y_rotate(shape[i][j])
+            else
+                shape[i][j] = z_rotate(shape[i][j])
+            end if
+        end for
     end for
     return shape
 end function
@@ -251,55 +251,55 @@ procedure spin(sequence shape)
     history = {}
     spread = 0
     while TRUE do
-	coords = new_coords(overall, shape)
-	if length(history) > spread then
-	    display(history[1], coords)
-	    history = history[2..length(history)]
-	    if length(history) > spread then
-		display(history[1], {})
-		history = history[2..length(history)]
-	    end if
-	else
-	    display({}, coords)
-	end if
-	history = append(history, coords)
-	c = get_key()
-	if c != -1 then
-	    if c = ' ' then
-		while TRUE do
-		    c = get_key()
-		    if c != -1 and c != ' ' then
-			return
-		    elsif c = ' ' then
-			exit
-		    end if
-		end while
-	    else
-		return
-	    end if
-	end if
-	r = rand(250)
-	if r = 1 then
-	    axis = X
-	elsif r = 2 then
-	    axis = Y
-	elsif r = 3 then
-	    axis = Z
-	elsif r = 4 then
-	    spread = 5 * rand(25)  -- leave behind many trailing wire images
-	elsif r = 5 or r = 6 then
-	    spread = 0             -- reduce the images back to a sharp picture
-	elsif r = 7 then
-	    if rand(2) = 1 then
-		rot_speed = .04
-		spread = 0
-	    else
-		rot_speed = .02 * rand(10)
-	    end if
-	    sin_angle = sin(rot_speed)
-	    cos_angle = cos(rot_speed)
-	end if
-	shape = compute_rotate(axis, shape)
+        coords = new_coords(overall, shape)
+        if length(history) > spread then
+            display(history[1], coords)
+            history = history[2..length(history)]
+            if length(history) > spread then
+                display(history[1], {})
+                history = history[2..length(history)]
+            end if
+        else
+            display({}, coords)
+        end if
+        history = append(history, coords)
+        c = get_key()
+        if c != -1 then
+            if c = ' ' then
+                while TRUE do
+                    c = get_key()
+                    if c != -1 and c != ' ' then
+                        return
+                    elsif c = ' ' then
+                        exit
+                    end if
+                end while
+            else
+                return
+            end if
+        end if
+        r = rand(250)
+        if r = 1 then
+            axis = X
+        elsif r = 2 then
+            axis = Y
+        elsif r = 3 then
+            axis = Z
+        elsif r = 4 then
+            spread = 5 * rand(25)  -- leave behind many trailing wire images
+        elsif r = 5 or r = 6 then
+            spread = 0             -- reduce the images back to a sharp picture
+        elsif r = 7 then
+            if rand(2) = 1 then
+                rot_speed = .04
+                spread = 0
+            else
+                rot_speed = .02 * rand(10)
+            end if
+            sin_angle = sin(rot_speed)
+            cos_angle = cos(rot_speed)
+        end if
+        shape = compute_rotate(axis, shape)
     
     end while
 end procedure

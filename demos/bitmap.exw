@@ -44,11 +44,11 @@ bitmap = read_bitmap(cl[3])
 if atom(bitmap) then
     -- failure
     if bitmap = BMP_OPEN_FAILED then
-	dos_rescue:puts(ERR, cl[3] & ": " & "couldn't open\n")
+        dos_rescue:puts(ERR, cl[3] & ": " & "couldn't open\n")
     elsif bitmap = BMP_UNEXPECTED_EOF then
-	dos_rescue:puts(ERR, cl[3] & ": " & "unexpected end of file\n")
+        dos_rescue:puts(ERR, cl[3] & ": " & "unexpected end of file\n")
     else
-	dos_rescue:puts(ERR, cl[3] & ": " & "unsupported format\n")
+        dos_rescue:puts(ERR, cl[3] & ": " & "unsupported format\n")
     end if
     abort(1)
 end if
@@ -84,8 +84,8 @@ display_image({0,0}, image) -- always display first one
 -- xstart = xlen+1
 -- for y = 0 to vc[VC_YPIXELS]-floor(ylen/2) by ylen+1 do
     -- for x = xstart to vc[VC_XPIXELS]-floor(xlen/2) by xlen+1 do
-	-- display_image({x,y}, image)
-	display_image({0,0}, image)
+        -- display_image({x,y}, image)
+        display_image({0,0}, image)
     -- end for
     -- xstart = 0
 -- end for

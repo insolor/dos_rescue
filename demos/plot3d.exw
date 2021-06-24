@@ -1,7 +1,7 @@
-		--------------------------------
-		-- Plotting of 3-D Surfaces:  --
-		-- Z as a function of X and Y --
-		--------------------------------
+                --------------------------------
+                -- Plotting of 3-D Surfaces:  --
+                -- Z as a function of X and Y --
+                --------------------------------
 
 -- The program does a quick plot of each function to get the scaling right,
 -- then replots so the picture will fit neatly on the screen.
@@ -45,9 +45,9 @@ sequence magnifier
 
 function abs(atom x)
     if x < 0 then
-	return -x
+        return -x
     else
-	return x
+        return x
     end if
 end function
 
@@ -137,19 +137,19 @@ end procedure
 procedure note_extreme(sequence coord, atom z)
 -- record the extreme values
     if coord[1] < xc_min then
-	xc_min = coord[1]
+        xc_min = coord[1]
     elsif coord[1] > xc_max then
-	xc_max = coord[1]
+        xc_max = coord[1]
     end if
     if coord[2] < yc_min then
-	yc_min = coord[2]
+        yc_min = coord[2]
     elsif coord[2] > yc_max then
-	yc_max = coord[2]
+        yc_max = coord[2]
     end if
     if z > z_max then
-	z_max = z
+        z_max = z
     elsif z < z_min then
-	z_min = z
+        z_min = z
     end if
 end procedure
 
@@ -189,25 +189,25 @@ end function
 
 function plot_a_function(integer func_no, integer fine=1, integer grid_width, integer draw = 1)
 -- generate 3d plotted graph
-	sequence prev_coord
+        sequence prev_coord
     for x = x_min to x_max+x_inc by grid_width * x_inc do
-	if get_key() != -1 then
-	    return 0
-	end if
-	prev_coord = {}
-	for y = y_min to y_max by fine * y_inc do
-	    prev_coord = plot(x, y, func_no, prev_coord, draw)
-	end for
+        if get_key() != -1 then
+            return 0
+        end if
+        prev_coord = {}
+        for y = y_min to y_max by fine * y_inc do
+            prev_coord = plot(x, y, func_no, prev_coord, draw)
+        end for
     end for
 
     for y = y_min to y_max+y_inc by grid_width * y_inc do
-	if get_key() != -1 then
-	    return 0
-	end if
-	prev_coord = {}
-	for x = x_min to x_max by fine * x_inc do
-	    prev_coord = plot(x, y, func_no, prev_coord, draw)
-	end for
+        if get_key() != -1 then
+            return 0
+        end if
+        prev_coord = {}
+        for x = x_min to x_max by fine * x_inc do
+            prev_coord = plot(x, y, func_no, prev_coord, draw)
+        end for
     end for
     return {xc_max,yc_max,xc_min,yc_min}
 end function
@@ -220,31 +220,31 @@ end procedure
 procedure plot3d()
 -- main program
     for func_no = 1 to length(funcs) do
-	set_range()
-	-- do a quick trial run to establish range of values
-	integer grid_width = 20
-	integer fine = 4
-	if sequence(plot_a_function(funcs[func_no], fine, grid_width, 0)) then
-	    clear_screen()
-	    box()
-	    -- make next one fit screen better
-	    magnifier = { (resolution[X] - 1) / (xc_max - xc_min),
+        set_range()
+        -- do a quick trial run to establish range of values
+        integer grid_width = 20
+        integer fine = 4
+        if sequence(plot_a_function(funcs[func_no], fine, grid_width, 0)) then
+            clear_screen()
+            box()
+            -- make next one fit screen better
+            magnifier = { (resolution[X] - 1) / (xc_max - xc_min),
                           (resolution[Y] - 1) / (yc_max - yc_min) }
-	    origin -= { xc_min, yc_min }
-	    grid_width = 20
-	    fine = 1
-	    if sequence(plot_a_function(funcs[func_no], fine, grid_width)) then
-		position(2, 2)
-		printf(SCREEN, "x: %5.1f to %4.1f", {x_min, x_max})
-		position(3, 2)
-		printf(SCREEN, "y: %5.1f to %4.1f", {y_min, y_max})
-		position(4, 2)
-		printf(SCREEN, "z: %5.1f to %4.1f", {z_min, z_max})
-		while get_key() = -1 do
-		end while
-	    end if
-	end if
-	clear_screen()
+            origin -= { xc_min, yc_min }
+            grid_width = 20
+            fine = 1
+            if sequence(plot_a_function(funcs[func_no], fine, grid_width)) then
+                position(2, 2)
+                printf(SCREEN, "x: %5.1f to %4.1f", {x_min, x_max})
+                position(3, 2)
+                printf(SCREEN, "y: %5.1f to %4.1f", {y_min, y_max})
+                position(4, 2)
+                printf(SCREEN, "z: %5.1f to %4.1f", {z_min, z_max})
+                while get_key() = -1 do
+                end while
+            end if
+        end if
+        clear_screen()
     end for
 end procedure
 
