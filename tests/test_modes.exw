@@ -1,7 +1,7 @@
 -- include image.e
 -- include machine.e
 -- include get.e
-include ../dos_rescue.ew
+include dos_rescue.ew
 without warning
 
 dos_rescue:use_vesa(1)

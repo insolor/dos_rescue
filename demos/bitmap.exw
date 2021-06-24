@@ -1,0 +1,97 @@
+-- bitmap displayer
+-- usage: exw bitmap file[.bmp]
+--
+-- example:  exw bitmap c:\windows\forest
+--
+-- It tries to use mode 261 for 256-color bitmaps and
+-- mode 18 for 16-color or less. If you can't get into mode 261
+-- try mode 19, or see graphics.e
+
+without type_check
+include dos_rescue.ew as dos_rescue
+-- include image.e
+
+constant ERR = 1
+
+sequence cl
+object bitmap
+sequence image, Palette
+
+procedure eu_abort(integer i)
+    abort(i)
+end procedure
+
+without warning
+procedure abort(integer i)
+    dos_rescue:puts(1,"Press Enter...")
+    if dos_rescue:getc(0) then
+    end if
+    eu_abort(i)
+end procedure
+with warning
+
+cl = command_line()
+if length(cl) < 3 then
+    dos_rescue:puts(ERR, "usage: ex bitmap file.bmp\n")
+    abort(1)
+end if
+if not find('.', cl[3]) then
+    cl[3] &= ".bmp"
+end if
+
+bitmap = read_bitmap(cl[3])
+
+if atom(bitmap) then
+    -- failure
+    if bitmap = BMP_OPEN_FAILED then
+	dos_rescue:puts(ERR, cl[3] & ": " & "couldn't open\n")
+    elsif bitmap = BMP_UNEXPECTED_EOF then
+	dos_rescue:puts(ERR, cl[3] & ": " & "unexpected end of file\n")
+    else
+	dos_rescue:puts(ERR, cl[3] & ": " & "unsupported format\n")
+    end if
+    abort(1)
+end if
+
+Palette = bitmap[1]
+image = bitmap[2]
+
+integer mode
+
+if length(Palette) > 16 then
+    -- mode = 261  -- do you have this mode?
+    mode = 259  -- do you have this mode?
+else
+    mode = 18   -- almost everyone has this one
+end if
+if graphics_mode(mode) then
+    dos_rescue:puts(ERR, "bad graphics mode\n")
+    abort(1)
+end if
+
+all_palette(Palette/4)  -- set the whole palette
+
+display_image({0,0}, image) -- always display first one
+
+-- integer xstart
+-- sequence vc
+-- vc = video_config()
+
+-- display others if there's room:
+-- integer xlen, ylen
+-- xlen = length(image[1])
+-- ylen = length(image)
+-- xstart = xlen+1
+-- for y = 0 to vc[VC_YPIXELS]-floor(ylen/2) by ylen+1 do
+    -- for x = xstart to vc[VC_XPIXELS]-floor(xlen/2) by xlen+1 do
+	-- display_image({x,y}, image)
+	display_image({0,0}, image)
+    -- end for
+    -- xstart = 0
+-- end for
+
+while get_key() = -1 do
+end while
+if graphics_mode(-1) then
+end if
+

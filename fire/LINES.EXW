@@ -5,7 +5,7 @@
 
 
 -- include graphics.e
-include ../dos_rescue.ew
+include dos_rescue.ew
 include get.e
 
 -- constant a=#A0000

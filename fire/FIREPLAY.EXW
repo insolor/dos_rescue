@@ -5,7 +5,7 @@
 
 -- include graphics.e
 -- include get.e
-include ../dos_rescue.ew
+include dos_rescue.ew
 
 constant
    -- a=#A0000,
@@ -96,7 +96,7 @@ procedure introduction()
    position(7,18)
    puts(1,"key          action")
    position(8,18)
-   puts(1,"ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ")
+   puts(1,"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")
    position(9,18)
    puts(1,"up, down     select control parameter (bar)")
    position(10,18)
@@ -114,13 +114,13 @@ procedure introduction()
    position(18,18)
    puts(1,"order of control parameter bars:")
    position(19,18)
-   puts(1,"ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  fire intensity")
+   puts(1,"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  fire intensity")
    position(20,18)
-   puts(1,"ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  fire attenuation")
+   puts(1,"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  fire attenuation")
    position(21,18)
-   puts(1,"ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  number of sparks")
+   puts(1,"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  number of sparks")
    position(22,18)
-   puts(1,"ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  base smoothness")
+   puts(1,"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  base smoothness")
    position(25,18)
    text_color(WHITE)
    puts(1,"press any key to continue...")

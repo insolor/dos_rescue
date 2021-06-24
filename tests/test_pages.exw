@@ -1,7 +1,7 @@
 -- Example from the 'set_active_page' artilce of the Eu3 manual
 
 -- include image.e
-include ../dos_rescue.ew
+include dos_rescue.ew
 
 graphics_mode(16)
 

@@ -1,0 +1,71 @@
+-- From Wikipedia:
+-- A Spirograph is a geometric drawing toy that produces mathematical roulette
+-- curves of the variety technically known as hypotrochoids and epitrochoids.
+-- It was developed by British engineer Denys Fisher and first sold in 1965.
+
+-- "Spirograph" has also been used to describe a variety of software
+-- applications that display similar curves. It has also been applied to the
+-- class of curves that can be produced with the drawing equipment, and
+-- therefore may be regarded as a synonym of hypotrochoid. The name has been
+-- a registered trademark of Hasbro, Inc., since it bought the Denys Fisher
+-- company.
+
+include dos_rescue.ew
+include std/math.e
+
+procedure spirograph(sequence origin, atom R, atom r, atom h, integer color, atom rounds=0)
+    sequence prev_coord
+    atom angle = 0
+    if rounds = 0 then
+        rounds = r/gcd(R-r,r)
+    end if
+    -- ? rounds
+    atom max_angle = 2*PI*rounds
+    atom step = PI/90
+    max_angle += step
+    atom k = (R-r)/r
+    while angle<max_angle do
+        sequence coord = origin + {
+            (R-r)*sin(angle)-h*sin(k*angle),
+            -((R-r)*cos(angle)+h*cos(k*angle))
+        }
+        if object(prev_coord) then
+            draw_line(color,{prev_coord,coord})
+        else
+            pixel(color,coord)
+        end if
+        angle += step
+        prev_coord = coord
+    end while
+    task_yield()
+end procedure
+
+graphics_mode(259)
+constant vc = video_config()
+constant origin = vc[VC_XPIXELS..VC_YPIXELS]/2
+
+constant R = 300
+
+text_color(BRIGHT_WHITE)
+for j = 2 to 12 label "outmost" do
+    for k = 1 to j-1 do
+        if gcd(j,k)>1 then
+            continue
+        end if
+        sequence s = {k,j}
+        printf(1,"r/R = %d/%d",{k,j})
+        atom r = R*s[1]/s[2]
+        integer color = 32
+        integer rounds = s[1]/gcd(s[2]-s[1],s[1])
+        for i = r/10 to r by r/24 do
+            spirograph(origin, R, r, i, color, rounds)
+            color += 1
+        end for
+        if wait_key()=27 then
+            exit "outmost"
+        end if
+        clear_screen()
+    end for
+end for
+
+graphics_mode(-1)

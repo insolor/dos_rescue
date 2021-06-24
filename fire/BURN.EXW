@@ -19,7 +19,7 @@
  
  
 -- include graphics.e
-include ../dos_rescue.ew
+include dos_rescue.ew
 include std/os.e
  
 procedure set_fire_palette()
