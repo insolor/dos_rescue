@@ -1,6 +1,7 @@
 -- Difinitions of the video modes --
+include palettes.e
 
-sequence video_modes
+public sequence video_modes
 
 video_modes = repeat(0,262)
 video_modes[   4 + 1 ] = { 1,   4, 25,  40,  320, 200,   4, 1, p4   }

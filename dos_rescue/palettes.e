@@ -1,6 +1,6 @@
 -- Packed palettes in #BBGGRR format
 
-constant
+public constant
     p2   = {#000000, #FFFFFF},
     p4   = {#000000, #FFFF55, #FF55FF, #FFFFFF},
     p4g  = {#000000, #AAAAAA, #555555, #FFFFFF},
