@@ -1,0 +1,129 @@
+-- burn.ex
+-- jiri babor
+-- j.babor@gns.cri.nz
+-- version 1.00   97-01-15
+ 
+-- Usage:
+--    include graphics.e
+--    ...
+--    set_fire_palette()
+--    ...
+--    burn(x1,y1,x2,y2)    - parameters specify a box on the screen.
+--    ...
+-- This vicious routine will destroy, by fire, anything and everything inside
+-- the given box that is not of the background color...
+-- Limitations:
+--    It's designed for mode 13h (320x200x256) specifically.
+--    It uses the top half of the palette (colors 128 to 255) for the fire.
+-- Please, allow at least 50 pixel high space above the box for the flames.
+ 
+ 
+-- include graphics.e
+include dos_rescue.ew
+include std/os.e
+ 
+procedure set_fire_palette()
+   sequence pal
+   pal=repeat({0,0,0},256)
+   -- save first half of current palette
+   for i = 0 to 127 do
+      pal[i+1]=palette(i,{0,0,0})
+   end for
+   -- yellow-red-slate fire palette
+   for i = 1 to 16 do
+      pal[i+128]=floor({i-1,(i-1)/2,(i-1)/2})
+      pal[i+144]=floor({15+i,8-i/2,8-i/2})
+   end for
+   for i = 1 to 32 do
+      pal[i+160]=floor({31+i,i-1,0})
+      pal[i+192]=floor({63,31+i,i-1})
+      pal[i+224]=floor({63,63,31+i})
+   end for
+   all_palette(pal)
+end procedure
+ 
+procedure burn(integer x1, integer y1, integer x2, integer y2)
+   integer a, cc, cols, finished, n, p, rows, ymin
+   sequence buff,csp
+ 
+   -- initialize
+   finished=0
+   cols=x2-x1+3
+   ymin=y1-50
+   rows=y2-ymin+3
+   buff=repeat(repeat(0,cols),rows)
+   p=8                    -- average number of horizontal scans per vertical
+                           -- pixel - decrease for a faster burn and vice versa
+   csp=repeat(50,cols)     -- current seed (vertical) position - for a delayed
+                           -- burn change to anything between 0 and 50
+ 
+   -- read the contents of the box into the buffer
+   for r = 51 to rows-2 do
+      buff[r]=get_pixel({x1,ymin+r,cols})
+   end for
+ 
+   while not finished do
+      -- seed fire
+      n=0
+      for c = 2 to cols-1 do
+         if rand(p)=1 and csp[c]<=rows then
+            csp[c]=csp[c]+1
+         end if
+         if csp[c]<=rows then
+            if buff[csp[c]][c] !=0 then
+               buff[csp[c]-1][c]=127+rand(128)
+               buff[csp[c]][c]=191+rand(64)
+            end if
+         else n=n+1
+         end if
+      end for
+     finished=(n>=cols-2) or get_key()!=-1
+ 
+      -- do calcs
+      for r = 2 to rows-1 do
+         for c = 2 to cols-1 do
+            if r<csp[c] then
+               cc = floor((buff[r][c-1]+buff[r][c]+
+                           buff[r][c+1]+buff[r+1][c])/4)
+               if cc>128 then cc=cc-1        -- attenuation
+               else cc=128 end if
+               buff[r-1][c]=cc
+            end if
+         end for
+      end for
+ 
+      -- show buffer
+      for r = 1 to rows-2 do
+         pixel(buff[r],{x1,ymin+r})
+      end for
+      sleep(0.02)
+   end while
+end procedure
+ 
+procedure burn_text(integer row, integer col, integer tcolor, sequence text)
+   text_color(tcolor)
+   position(row,col)
+   puts(1,text)
+   burn(8*(col-1),8*(row-1),8*(col+length(text)-1),8*row)
+end procedure
+ 
+-- example ---------------------------------------------------------------------
+
+integer junk
+junk = graphics_mode(19)
+set_full_screen(1)
+ 
+set_fire_palette()
+ 
+polygon(12,1,{{102,82},{209,82},{209,100},{102,100}})
+text_color(9)
+position(12,14)
+puts(1,"VIVA EUPHORIA")
+ 
+burn(101,82,210,100)
+clear_screen()
+
+burn_text(15,13,YELLOW,"HAPPY NEW YEAR")
+
+set_full_screen(0)
+junk=graphics_mode(-1)
